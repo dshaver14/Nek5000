@@ -109,3 +109,6 @@ c
      &  pardictkey(102)/ 'MESH:PARTITIONER' /
      &  pardictkey(103)/ 'MESH:CONNECTIVITYTOL' /
      &  pardictkey(104)/ 'SCALAR%%:ADVECTION' /     
+     &  pardictkey(105)/ 'VELOCITY:AVERAGING' /     
+     &  pardictkey(106)/ 'TEMPERATURE:AVERAGING' /     
+     &  pardictkey(107)/ 'SCALAR%%:AVERAGING' /     

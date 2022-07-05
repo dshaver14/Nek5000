@@ -19,5 +19,9 @@ c
      $   , vwms(ax1,ay1,az1,lelt)
      $   , wums(ax1,ay1,az1,lelt)
      $   , uvms(ax1,ay1,az1,lelt)
+     $   , tums(ax1,ay1,az1,lelt,ldimt)
+     $   , tvms(ax1,ay1,az1,lelt,ldimt)
+     $   , twms(ax1,ay1,az1,lelt,ldimt)
       common /chkrms/ urms, vrms, wrms, trms, prms, vwms, wums, uvms
+     $   , tums,tvms,twms
 

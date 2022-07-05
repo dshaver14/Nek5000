@@ -210,6 +210,7 @@ c-----------------------------------------------------------------------
          call set_outfld
          etime1 = dnekclock()
          call userchk
+         if(ifuavg) call avg_all
          tuchk = tuchk + dnekclock()-etime1
          call prepost (ifoutfld,'his')
          call in_situ_check()

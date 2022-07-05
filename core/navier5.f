@@ -901,6 +901,13 @@ c
       include 'TOTAL' 
       include 'AVG'
 
+      parameter(ltot1=lx1*ly1*lz1*lelt)
+      parameter(ltot2=lx2*ly2*lz2*lelv)
+      common /outtmp/  w1(ltot1),w2(ltot1),w3(ltot1),wp(ltot2)
+     &                ,wt(ltot1,ldimt)
+      logical if_save(ldimt+2)
+      character*3 txt3
+
       logical ifverbose
       integer icalld
       save    icalld
@@ -941,6 +948,9 @@ c
          call rzero(prms,nto2)
          do i = 1,ldimt
             call rzero(trms(1,1,1,1,i),ntott)
+            call rzero(tums(1,1,1,1,i),ntott)
+            call rzero(tvms(1,1,1,1,i),ntott)
+            call rzero(twms(1,1,1,1,i),ntott)
          enddo
 
          call rzero(vwms,ntot)
@@ -969,10 +979,10 @@ c
          call avg1    (vavg,vy,alpha,beta,ntot ,'vm  ',ifverbose)
          call avg1    (wavg,vz,alpha,beta,ntot ,'wm  ',ifverbose)
          call avg1    (pavg,pr,alpha,beta,nto2 ,'prm ',ifverbose)
-         call avg1    (tavg,t ,alpha,beta,ntott,'tm  ',ifverbose)
+         if(iftavg) call avg1(tavg,t ,alpha,beta,ntott,'tm  ',ifverbose)
          do i = 2,ldimt
-            call avg1 (tavg(1,1,1,1,i),t(1,1,1,1,i),alpha,beta,
-     &                 ntott,'psav',ifverbose)
+           if(ifpsavg(i-1)) call avg1 (tavg(1,1,1,1,i),t(1,1,1,1,i)
+     &                               ,alpha,beta,ntott,'psav',ifverbose)
          enddo
 
          ! compute averages E(X^2) 
@@ -980,16 +990,31 @@ c
          call avg2    (vrms,vy,alpha,beta,ntot ,'vms ',ifverbose)
          call avg2    (wrms,vz,alpha,beta,ntot ,'wms ',ifverbose)
          call avg2    (prms,pr,alpha,beta,nto2 ,'prms',ifverbose)
-         call avg2    (trms,t ,alpha,beta,ntott,'tms ',ifverbose)
+         if(iftavg) call avg2(trms,t ,alpha,beta,ntott,'tms ',ifverbose)
          do i = 2,ldimt
-            call avg2 (trms(1,1,1,1,i),t(1,1,1,1,i),alpha,beta,
-     &                 ntott,'psms',ifverbose)
+           if(ifpsavg(i-1)) call avg2 (trms(1,1,1,1,i),t(1,1,1,1,i)
+     &                               ,alpha,beta,ntott,'psms',ifverbose)
          enddo
 
-         ! compute averages E(X*Y) (for now just for the velocities)
+         ! compute averages E(X*Y)
          call avg3    (uvms,vx,vy,alpha,beta,ntot,'uvm ',ifverbose)
          call avg3    (vwms,vy,vz,alpha,beta,ntot,'vwm ',ifverbose)
          call avg3    (wums,vz,vx,alpha,beta,ntot,'wum ',ifverbose)
+         if(iftavg) then
+           call avg3  (tums,t,vx,alpha,beta,ntot,'tum ',ifverbose)
+           call avg3  (tvms,t,vy,alpha,beta,ntot,'tvm ',ifverbose)
+           call avg3  (twms,t,vz,alpha,beta,ntot,'twm ',ifverbose)
+         endif
+         do i=2,ldimt
+           if(ifpsavg(i-1) then
+             call avg3(tums(1,1,1,1,i),t(1,1,1,1,i),vx,alpha,beta
+     &                                           ,ntot,'psum',ifverbose)
+             call avg3(tvms(1,1,1,1,i),t(1,1,1,1,i),vy,alpha,beta
+     &                                           ,ntot,'psum',ifverbose)
+             call avg3(twms(1,1,1,1,i),t(1,1,1,1,i),vz,alpha,beta
+     &                                           ,ntot,'psum',ifverbose)
+           endif
+         enddo
       endif
 c
 c-----------------------------------------------------------------------
@@ -1000,10 +1025,116 @@ c-----------------------------------------------------------------------
          dtmp      = param(63)
          param(63) = 1       ! Enforce 64-bit output
 
-         call outpost2(uavg,vavg,wavg,pavg,tavg,ldimt,'avg')
-         call outpost2(urms,vrms,wrms,prms,trms,ldimt,'rms')
-         call outpost (uvms,vwms,wums,prms,trms,      'rm2')
+         if(.not.ifuavg) then !legacy behavior
+c        outpost and outpost2 don't respect the output flags
+           call outpost2(uavg,vavg,wavg,pavg,tavg,ldimt,'avg')
+           call outpost2(urms,vrms,wrms,prms,trms,ldimt,'rms')
+           call outpost (uvms,vwms,wums,prms,trms,      'rm2')
+         else
 
+c store solution
+           call copy(w1,vx,ntot)
+           call copy(w2,vy,ntot)
+           call copy(w3,vz,ntot)
+           call copy(wp,pr,nto2)
+           do i = 1,ldimt
+             call copy(wt(1,i),t(1,1,1,1,i),ntott)
+           enddo 
+
+c store flags
+           if_save(1)=ifuo     
+           if_save(2)=ifpo     
+           if_save(3)=ifto     
+           do i=1,ldimt-1
+             if_save(i+3)=ifpsco(i)
+           enddo
+
+c dump avg file
+           call copy(vx,uavg,ntot)
+           call copy(vy,vavg,ntot)
+           call copy(vz,wavg,ntot)
+           call copy(pr,pavg,nto2)
+           call copy(t,tavg,ntott)
+           do i=2,ldimt
+             call copy(t(1,1,1,1,i),tavg(1,1,1,1,i),ntott)
+           enddo
+
+           ifuo=.true.
+           ifpo=.true.
+           ifto=iftavg
+           do i=2,ldimt
+             ifpsco(i)=ifpsavg(i-1)
+           enddo
+
+           call prepost(.true.,'avg')
+
+c dump rms file
+           call copy(vx,urms,ntot)
+           call copy(vy,vrms,ntot)
+           call copy(vz,wrms,ntot)
+           call copy(pr,prms,nto2)
+           call copy(t,trms,ntott)
+           do i=2,ldimt
+             call copy(t(1,1,1,1,i),trms(1,1,1,1,i),ntott)
+           enddo
+
+           call prepost(.true.,'rms')
+
+c dump rm2 file
+           call copy(vx,uvms,ntot)
+           call copy(vy,vwms,ntot)
+           call copy(vz,wums,ntot)
+
+           ifpo=.false. !pr^2 is already in rms file
+           ifto=.false. !T^2 is already in rms file
+           do i=1,ldimt-1
+             ifpsco(i)=.false. !ps^2 is already in rms file
+           enddo
+
+           call prepost(.true.,'rm2')
+
+c dump rmT file
+           if(iftavg) then
+             call copy(vx,tums,ntott)
+             call copy(vy,tvms,ntott)
+             call copy(vz,twms,ntott)
+         
+             call prepost(.true.,'rmT')
+           endif
+
+c dump rsi files
+           do i = 2,ldimt
+             if(ifpsavg(i-1)) then
+               call copy(vx,tums(1,1,1,1,i),ntott)
+               call copy(vy,tvms(1,1,1,1,i),ntott)
+               call copy(vz,twms(1,1,1,1,i),ntott)
+
+               write(txt3,"('rs',i1)") i-1
+               if(i.ge.11)  write(txt3,"('r',i2)") i-1
+               call prepost(.true.,txt3)
+             endif
+           enddo
+
+c restore flags
+           ifuo=if_save(1)
+           ifpo=if_save(2)
+           ifto=if_save(3) 
+           do i=1,ldimt-1
+             ifpsco(i)=if_save(i+3)
+           enddo
+
+c restore solution
+           call copy(vx,w1,ntot)
+           call copy(vy,w2,ntot)
+           call copy(vz,w3,ntot)
+           call copy(pr,wp,nto2)
+           do i = 1,ldimt
+             call copy(t(1,1,1,1,i),wt(1,i),ntott)
+           enddo 
+
+         endif
+
+c restore time
          param(63) = dtmp
          atime = 0.
          time  = time_temp  ! Restore clock

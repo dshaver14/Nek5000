@@ -837,6 +837,17 @@ c set connectivity tolerance
       call finiparser_getDbl(d_out,'mesh:connectivityTol',ifnd)
       if(ifnd .eq. 1) connectivityTol = d_out
 
+c set flags for averaging
+      call finiparser_getBool(i_out,'velocity:averaging',ifnd)
+      if(ifnd.eq.1.and.i_out.eq.1) ifuavg=.true.
+      call finiparser_getBool(i_out,'temperature:averaging',ifnd)
+      if(ifnd.eq.1.and.i_out.eq.1) iftavg=.true.
+      do i = 1,ldimt-1
+        write(txt,"('scalar',i2.2,a)" i,':averaging'
+        call finiparser_getBool(i_out,txt,ifnd)
+        if(ifnd.eq.1.and.i_out.eq.1) ifpsavg(i)=.true.
+      enddo
+
 100   if(ierr.eq.0) call finiparser_dump()
       return
 
