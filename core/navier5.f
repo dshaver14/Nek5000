@@ -956,6 +956,13 @@ c
          call rzero(vwms,ntot)
          call rzero(wums,ntot)
          call rzero(uvms,ntot)
+
+         if(.not.ifuavg) then !legacy behavior
+           iftavg=.true.
+           do i = 2,ldimt
+             ifpsavg(i)=.true.
+           enddo
+         endif
       endif
 
       dtime = time  - timel
@@ -1000,21 +1007,23 @@ c
          call avg3    (uvms,vx,vy,alpha,beta,ntot,'uvm ',ifverbose)
          call avg3    (vwms,vy,vz,alpha,beta,ntot,'vwm ',ifverbose)
          call avg3    (wums,vz,vx,alpha,beta,ntot,'wum ',ifverbose)
-         if(iftavg) then
-           call avg3  (tums,t,vx,alpha,beta,ntot,'tum ',ifverbose)
-           call avg3  (tvms,t,vy,alpha,beta,ntot,'tvm ',ifverbose)
-           call avg3  (twms,t,vz,alpha,beta,ntot,'twm ',ifverbose)
-         endif
-         do i=2,ldimt
-           if(ifpsavg(i-1) then
+         if(ifuavg) then
+           if(iftavg) then
+             call avg3  (tums,t,vx,alpha,beta,ntot,'tum ',ifverbose)
+             call avg3  (tvms,t,vy,alpha,beta,ntot,'tvm ',ifverbose)
+             call avg3  (twms,t,vz,alpha,beta,ntot,'twm ',ifverbose)
+           endif
+           do i=2,ldimt
+             if(ifpsavg(i-1) then
              call avg3(tums(1,1,1,1,i),t(1,1,1,1,i),vx,alpha,beta
      &                                           ,ntot,'psum',ifverbose)
              call avg3(tvms(1,1,1,1,i),t(1,1,1,1,i),vy,alpha,beta
      &                                           ,ntot,'psum',ifverbose)
              call avg3(twms(1,1,1,1,i),t(1,1,1,1,i),vz,alpha,beta
      &                                           ,ntot,'psum',ifverbose)
-           endif
-         enddo
+             endif
+           enddo
+         endif
       endif
 c
 c-----------------------------------------------------------------------

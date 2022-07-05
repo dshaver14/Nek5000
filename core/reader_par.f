@@ -145,6 +145,12 @@ C
          idpss(i) = -1
       enddo 
 
+      ifuavg=.false.
+      iftavg=.false.
+      do i=1,ldimt
+        ifpsavg(i)=.false.
+      enddo
+
       meshPartitioner=3 ! HYBRID (RSB+RCB)
       connectivityTol=0.2
 
@@ -841,11 +847,17 @@ c set flags for averaging
       call finiparser_getBool(i_out,'velocity:averaging',ifnd)
       if(ifnd.eq.1.and.i_out.eq.1) ifuavg=.true.
       call finiparser_getBool(i_out,'temperature:averaging',ifnd)
-      if(ifnd.eq.1.and.i_out.eq.1) iftavg=.true.
+      if(ifnd.eq.1.and.i_out.eq.1) then
+        iftavg=.true.
+        ifuavg=.true. !always need velocity
+      endif
       do i = 1,ldimt-1
         write(txt,"('scalar',i2.2,a)" i,':averaging'
         call finiparser_getBool(i_out,txt,ifnd)
-        if(ifnd.eq.1.and.i_out.eq.1) ifpsavg(i)=.true.
+        if(ifnd.eq.1.and.i_out.eq.1) then
+          ifpsavg(i)=.true.
+          ifuavg=.true.
+        endif
       enddo
 
 100   if(ierr.eq.0) call finiparser_dump()
