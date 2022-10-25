@@ -218,6 +218,7 @@ c     - mhd support
       INCLUDE 'PARALLEL'
       INCLUDE 'CTIMER'
       INCLUDE 'TSTEP'
+      INCLUDE 'RANS'
 
       character*132 c_out,txt, txt2
 
@@ -337,15 +338,21 @@ c set parameters
       endif
 
       j = 0
+      imx = 0
       do i = 1,ldimt-1
          write(txt,"('scalar',i2.2)") i
          call finiparser_find(i_out,txt,ifnd)
          if (ifnd .eq. 1) then
             j = j + 1 
+            imx = max(imx,i)
             ifpsco(i) = .true.
-            idpss(i+1) = 0 ! Helmholtz is default
+            idpss(i+1) = 0 ! Helmholtz is default !do this later with the other solvers
          endif
       enddo
+      if(imx.gt.j) then
+        write(6,*) 'missing scalar in par file!'
+        goto 999
+      endif
       param(23) = j ! number of scalars 
       n = param(23)
  
@@ -354,46 +361,46 @@ c set parameters
 
       do i = is,n+1
 
-      if (i.eq.1) then
-        txt = 'temperature'
-      else
-        write(txt,"('scalar',i2.2)") i-1
-      endif
+       if (i.eq.1) then
+         txt = 'temperature'
+       else
+         write(txt,"('scalar',i2.2)") i-1
+       endif
 
-      call finiparser_getString(c_out,trim(txt)//':solver',ifnd)
-      call capit(c_out,132)
-      if(ifnd .eq. 1) then 
-        if (index(c_out,'CVODE') .eq. 1) then
-          idpss(i) = 1
-          call finiparser_getDbl(d_out,trim(txt)//':absoluteTol',ifnd)
-          if (ifnd .eq. 1) then
-             atol(i+1) = d_out 
-          else
-             write(6,*) trim(txt) // ':absoluteTol' 
-             write(6,*) 'is required for ',trim(txt)//':solver = CVODE'
-             goto 999
-          endif
-        else if (index(c_out,'HELM') .eq. 1) then
-          continue
-        else if (index(c_out,'NONE') .eq. 1) then
-          idpss(i) = -1
-        else
-           write(6,*) 'value: ',trim(c_out)
-           write(6,*) 'is invalid for ',trim(txt)//':solver!' 
-           goto 999
-        endif
-      else
-        call finiparser_getDbl(d_out,trim(txt)//':residualTol',ifnd)
-        if (ifnd .eq. 1) then
-           restol(i+1) = d_out 
-        endif
-      endif
-      call finiparser_getBool(i_out,trim(txt)//':residualProj',ifnd)
-      if (ifnd .eq. 1) then
-         ifprojfld(i+1) = .false.
-         if(i_out .eq. 1) ifprojfld(i+1) = .true.
-      endif
- 
+       call finiparser_getString(c_out,trim(txt)//':solver',ifnd)
+       call capit(c_out,132)
+       if(ifnd .eq. 1) then 
+         if (index(c_out,'CVODE') .eq. 1) then
+           idpss(i) = 1
+           call finiparser_getDbl(d_out,trim(txt)//':absoluteTol',ifnd)
+           if (ifnd .eq. 1) then
+              atol(i+1) = d_out 
+           else
+              write(6,*) trim(txt) // ':absoluteTol' 
+              write(6,*) 'is required for ',trim(txt)//':solver = CVODE'
+              goto 999
+           endif
+         else if (index(c_out,'HELM') .eq. 1) then
+           continue
+         else if (index(c_out,'NONE') .eq. 1) then
+           idpss(i) = -1
+         else
+            write(6,*) 'value: ',trim(c_out)
+            write(6,*) 'is invalid for ',trim(txt)//':solver!' 
+            goto 999
+         endif
+       else
+         call finiparser_getDbl(d_out,trim(txt)//':residualTol',ifnd)
+         if (ifnd .eq. 1) then
+            restol(i+1) = d_out 
+         endif
+       endif
+       call finiparser_getBool(i_out,trim(txt)//':residualProj',ifnd)
+       if (ifnd .eq. 1) then
+          ifprojfld(i+1) = .false.
+          if(i_out .eq. 1) ifprojfld(i+1) = .true.
+       endif
+
       enddo
 
       call finiparser_getDbl(d_out,'cvode:absoluteTol',ifnd)
@@ -709,6 +716,34 @@ c set logical flags
         if(i_out .eq. 1) ifdp0dt = .true.
       endif
 
+      call finiparser_getString(c_out,'problemType:ransmodel',ifnd)
+      if(ifnd .eq. 1) then
+        ifrans = .true.
+        ifstrs = .true.
+        ifuservp = .true. !need stress, don't need uservp
+        i=param(23)+2
+        param(23)=i !two more passive scalars
+        idpss(i-1) = 1
+        idpss(i) = 1
+        if(index(c_out,'komgstandard').eq.1)then
+          rans_id = 0
+        elseif(index(c_out,'komglowre').eq.1)then
+          rans_id = 1
+        elseif(index(c_out,'komgsst').eq.1)then
+          rans_id = 2
+        elseif(index(c_out,'ktaustandard').eq.1)then
+          rans_id = 4
+        elseif(index(c_out,'ktaulowre').eq.1)then
+          rans_id = 5
+        elseif(index(c_out,'ktausst').eq.1)then
+          rans_id = 6
+        else
+          write(6,*) 'value: ',trim(c_out)
+          write(6,*) 'not supported for problemType:ransModel!'
+          goto 999
+        endif
+      endif
+
       call finiparser_getBool(i_out,'cvode:stiff',ifnd)
       if(ifnd .eq. 1) then
         param(161) = 1 ! AM
@@ -859,6 +894,7 @@ C
       INCLUDE 'CTIMER'
       INCLUDE 'ADJOINT'
       INCLUDE 'CVODE'
+      INCLUDE 'RANS'
 
       call bcast(loglevel, isize)
       call bcast(optlevel, isize)
@@ -889,6 +925,7 @@ C
       call bcast(ifmoab, lsize)
       call bcast(ifaziv, lsize)
       call bcast(ifadj , lsize)
+      call bcast(ifrans, lsize)
 
       call bcast(ifadvc ,  ldimt1*lsize)
       call bcast(ifdiff ,  ldimt1*lsize)
@@ -914,6 +951,8 @@ C
       call bcast(initc, 15*132*csize) 
 
       call bcast(timeioe,sizeof(timeioe))
+
+      call bcast(rans_id,isize)
 
 c set some internals 
       if (ldim.eq.3) if3d=.true.
