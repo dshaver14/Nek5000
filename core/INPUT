@@ -43,7 +43,7 @@ c
      $               ,iftmsh(0:ldimt1),ifdgfld(0:ldimt1),ifdg
      $               ,ifmvbd,ifchar,ifnonl(ldimt1)
      $               ,ifvarp(ldimt1),ifpsco(ldimt1),ifvps
-     $               ,ifmodel,ifkeps,ifintq,ifcons
+     $               ,ifmodel,ifrans,ifintq,ifcons
      $               ,ifxyo,ifpo,ifvo,ifto,iftgo,ifpso(ldimt1),iffmtin
      $               ,ifbo,ifanls,ifanl2,ifmhd,ifessr,ifpert,ifbase
      $               ,ifcvode,iflomach,ifexplvis,ifschclob,ifuservp
@@ -59,7 +59,7 @@ c
      $               ,iftmsh,ifdgfld,ifdg
      $               ,ifmvbd,ifchar,ifnonl
      $               ,ifvarp        ,ifpsco        ,ifvps
-     $               ,ifmodel,ifkeps,ifintq,ifcons
+     $               ,ifmodel,ifrans,ifintq,ifcons
      $               ,ifxyo,ifpo,ifvo,ifto,iftgo,ifpso        ,iffmtin
      $               ,ifbo,ifanls,ifanl2,ifmhd,ifessr,ifpert,ifbase
      $               ,ifcvode,iflomach,ifexplvis,ifschclob,ifuservp

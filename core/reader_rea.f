@@ -126,7 +126,7 @@ C
       IFSTRS    = .false.
       IFLOMACH  = .false.
       IFMODEL   = .false.
-      IFKEPS    = .false.
+      IFRANS    = .false.
       IFMVBD    = .false.
       IFCHAR    = .false.
       IFDG      = .false.
@@ -190,7 +190,7 @@ c     IFSPLIT   = .false.
          elseif (indx1(string(i),'IFMGRID',7).gt.0) then 
 c             read(string(i),*) IFMGRID
          elseif (indx1(string(i),'IFKEPS' ,6).gt.0) then 
-              read(string(i),*) IFKEPS
+              read(string(i),*) IFRANS
          elseif (indx1(string(i),'IFMODEL',7).gt.0) then 
               read(string(i),*) IFMODEL
          elseif (indx1(string(i),'IFMVBD' ,6).gt.0) then 

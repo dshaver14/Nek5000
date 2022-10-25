@@ -184,7 +184,7 @@ C
       ifcons    = .false.   
 
       ifmodel   = .false. 
-      ifkeps    = .false.
+      ifrans    = .false.
       ifschclob = .false. 
 
       ifdp0dt   = .false.
