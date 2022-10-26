@@ -197,7 +197,10 @@ c     real coeffs_in(*),ywd_in(*)
       logical ifcoeffs,ifransD
 
       character*3 bcw
+      character bc1
       character*36 mname(7)
+
+      equivalence(bc1,bcw)
 
       data mname
      &/'regularized standard k-omega        '
@@ -234,10 +237,6 @@ c     real coeffs_in(*),ywd_in(*)
 c split diagonal of the source term into implicit, by Sigfried
       ifrans_diag=.TRUE.
 
-      if(nid.eq.0) write(*,'(a,a)')
-     &                      '  model: ',mname(rans_id+1)
-      if(nio.eq.0) write(*,*)
-     &                      '  ifrans_diag: ',ifrans_diag
       ifld_k     = npscal+1
       ifld_omg = npscal+2
       ifld_tau = ifld_omg
@@ -245,7 +244,17 @@ c split diagonal of the source term into implicit, by Sigfried
       if (ifld_mx.gt.ldimt1)
      $  call exitti('nflds gt ldimt+1, recompile with ldimt > ',
      $  ifld_mx+1)
+      if(nid.eq.0) then
+        write(*,'(a,a)') '  model: ',mname(rans_id+1)
+        write(*,*)       '  ifrans_diag: ',ifrans_diag
+        write(*,*) ' ifld_k = ',ifld_k
+        write(*,*) ' ifld_omg = ',ifld_omg
+      endif
 
+      cpfld(ifld_k,1)=cpfld(1,1)
+      cpfld(ifld_k,2)=cpfld(1,2)
+      cpfld(ifld_omg,1)=cpfld(1,1)
+      cpfld(ifld_omg,2)=cpfld(1,2)
 ! specify k-omega model coefficients
 
 
@@ -282,10 +291,10 @@ c set cbc array for k and omega/tau (need to revise for wall-functions)
         bcw=cbc(ifc,ie,1)
         cbc(ifc,ie,ifld_k)=bcw
         cbc(ifc,ie,ifld_omg)=bcw
-        if(bcw.eq.'W  '.or.bcw.eq.'v  ') then
+        if(bcw.eq.'W  '.or.bc1.eq.'v') then
           cbc(ifc,ie,ifld_k)='t  '
           cbc(ifc,ie,ifld_omg)='t  '
-        elseif(bcw.eq.'SYM'.or.bcw.eq.'O  '.or.bcw.eq.'o  ') then
+        elseif(bcw.eq.'SYM'.or.bcw.eq.'O  '.or.bc1.eq.'o') then
           cbc(ifc,ie,ifld_k)='I  '
           cbc(ifc,ie,ifld_omg)='I  '
         endif
@@ -294,6 +303,65 @@ c set cbc array for k and omega/tau (need to revise for wall-functions)
 c solve for omega_wall & setup molecular viscosity
       if(rans_id.ge.0.and.rans_id.le.2) call rans_komg_omegabase
       call cfill(mul,cpfld(1,1),n)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rans_props
+      implicit none
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+      include 'RANS'
+
+      integer ix,iy,iz,ie,n
+      real rans_mut,rans_turbPrandtl,utrns1
+
+      n=lx1*ly1*lz1*nelv
+
+      if(nio.eq.0.and.loglevel.gt.2) write(6,*) 'rans_props ',ifield
+
+      if(ifield.eq.1) then
+        do 10 ie = 1,nelv
+        do 10 iz = 1,lz1
+        do 10 iy = 1,ly1
+        do 10 ix = 1,lx1
+          udiff=vdiff(ix,iy,iz,ie,ifield)
+          mu_t=rans_mut(ix,iy,iz,ie)
+          mul(ix,iy,iz,ie)=udiff  !RANS models need molecular viscosity
+          vdiff(ix,iy,iz,ie,ifield)=udiff+mu_t
+ 10     continue
+      elseif(ifield.eq.ifld_k) then
+        call copy(vtrans(1,1,1,1,ifld_k),vtrans,n)
+        do 20 ie = 1,nelv
+        do 20 iz = 1,lz1
+        do 20 iy = 1,ly1
+        do 20 ix = 1,lx1
+          udiff=vdiff(ix,iy,iz,ie,ifield)
+          vdiff(ix,iy,iz,ie,ifield)=udiff+mutsk(ix,iy,iz,ie)
+ 20     continue
+      elseif(ifield.eq.ifld_omg) then
+        call copy(vtrans(1,1,1,1,ifld_omg),vtrans,n)
+        do 30 ie = 1,nelv
+        do 30 iz = 1,lz1
+        do 30 iy = 1,ly1
+        do 30 ix = 1,lx1
+          udiff=vdiff(ix,iy,iz,ie,ifield)
+          vdiff(ix,iy,iz,ie,ifield)=udiff+mutso(ix,iy,iz,ie)
+ 30     continue
+      else  !temperature and all other scalars, assume Sc_t = Pr_t
+        Pr_t=rans_turbPrandtl()
+        do 40 ie = 1,nelv
+        do 40 iz = 1,lz1
+        do 40 iy = 1,ly1
+        do 40 ix = 1,lx1
+          mu_t=rans_mut(ix,iy,iz,ie)
+          utrans=vtrans(ix,iy,iz,ie,ifield)
+          utrns1=vtrans(ix,iy,iz,ie,1)
+          udiff=vdiff(ix,iy,iz,ie,ifield)
+          vdiff(ix,iy,iz,ie,ifield)=udiff+mu_t*utrans/(Pr_t*utrns1)
+ 40     continue
+      endif
 
       return
       end

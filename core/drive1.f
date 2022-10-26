@@ -102,9 +102,11 @@ c      COMMON /SCRCG/ DUMM10(LX1,LY1,LZ1,LELT,1)
       call usrdat2
       if(nio.eq.0) write(6,'(A,/)') ' done :: usrdat2' 
 
-      if(nio.eq.0) write(6,*) 'call rans_init'
-      if(ifrans) call rans_init
-      if(nio.eq.0) write(6,'(A,/)') ' done :: rans_init' 
+      if(ifrans) then
+        if(nio.eq.0) write(6,*) 'call rans_init'
+        call rans_init
+        if(nio.eq.0) write(6,'(A,/)') ' done :: rans_init' 
+      endif
 
       call fix_geom
 

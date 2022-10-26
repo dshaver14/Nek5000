@@ -2623,6 +2623,7 @@ C------------------------------------------------------------------------
       include 'SIZE'
       include 'TOTAL'
       include 'CTIMER'
+      include 'RANS'
 C
 C     Caution: 2nd and 3rd strainrate invariants residing in scratch
 C              common /SCREV/ are used in STNRINV and NEKASGN
@@ -2650,6 +2651,7 @@ C
       do ifield=mfield,nfldt
          if (idpss(ifield-1).eq.-1) goto 100
          call vprops
+         if(ifrans) call rans_props
  100     continue
       enddo
 

@@ -719,12 +719,15 @@ c set logical flags
       call finiparser_getString(c_out,'problemType:ransmodel',ifnd)
       if(ifnd .eq. 1) then
         ifrans = .true.
+        ifheat = .true.
         ifstrs = .true.
-        ifuservp = .true. !need stress, don't need uservp
+c       ifuservp = .true. !need stress, don't need uservp
         i=param(23)+2
         param(23)=i !two more passive scalars
-        idpss(i-1) = 1
-        idpss(i) = 1
+        idpss(i) = 0
+        idpss(i+1) = 0
+        ifpsco(i-1)=.true.
+        ifpsco(i)=.true.
         if(index(c_out,'komgstandard').eq.1)then
           rans_id = 0
         elseif(index(c_out,'komglowre').eq.1)then
