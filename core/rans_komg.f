@@ -314,7 +314,7 @@ c-----------------------------------------------------------------------
       include 'NEKUSE'
       include 'RANS'
 
-      integer ix,iy,iz,ie,n
+      integer n
       real rans_mut,rans_turbPrandtl,utrns1,w1
 
       common /SCRNS/ w1(lx1*ly1*lz1*lelv)
@@ -340,6 +340,30 @@ c-----------------------------------------------------------------------
         call invcol2(w1,vtrans,n)
         call cmult(w1,1.0/Pr_t,n)
         call add2(vdiff(1,1,1,1,ifield),w1,n)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setqrans(bql,aql)
+      implicit none
+      include 'SIZE'
+      include 'TSTEP'
+      include 'RANS'
+
+      real bql(lx1*ly1*lz1*lelt),aql(lx1*ly1*lz1*lelt)
+      integer n
+      real srcdd,rans_kSrc
+
+      n=lx1*ly1*lz1*nelv
+
+      if(ifield.eq.ifld_k) then
+        srcdd=rans_kSrc(1,1,1,1) !trigger source term update if necessary
+        call add2(bql,kSrc,n)
+        call add2(aql,kDiag,n)
+      elseif(ifield.eq.ifld_omg) then
+        call add2(bql,omgSrc,n)
+        call add2(aql,omgDiag,n)
       endif
 
       return

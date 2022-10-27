@@ -120,8 +120,10 @@ c     mass matrix on the Gauss-Lobatto mesh.
 
       if (nio.eq.0.and.loglevel.gt.2) 
      $   write(6,*) 'makeuq', ifield, time
-      call setqvol(bq(1,1,1,1,ifield-1),adq(1,1,1,1,ifield-1))
-      call col2   (bq(1,1,1,1,ifield-1) ,bm1,n)
+      call setqvol (bq(1,1,1,1,ifield-1),adq(1,1,1,1,ifield-1))
+      if(ifrans)
+     &  call setqrans(bq(1,1,1,1,ifield-1),adq(1,1,1,1,ifield-1))
+      call col2    (bq(1,1,1,1,ifield-1) ,bm1,n)
 
       if (.not.ifcvfld(ifield)) time = time+dt ! Restore time
 
