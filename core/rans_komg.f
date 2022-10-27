@@ -315,52 +315,31 @@ c-----------------------------------------------------------------------
       include 'RANS'
 
       integer ix,iy,iz,ie,n
-      real rans_mut,rans_turbPrandtl,utrns1
+      real rans_mut,rans_turbPrandtl,utrns1,w1
+
+      common /SCRNS/ w1(lx1*ly1*lz1*lelv)
 
       n=lx1*ly1*lz1*nelv
 
       if(nio.eq.0.and.loglevel.gt.2) write(6,*) 'rans_props ',ifield
 
       if(ifield.eq.1) then
-        do 10 ie = 1,nelv
-        do 10 iz = 1,lz1
-        do 10 iy = 1,ly1
-        do 10 ix = 1,lx1
-          udiff=vdiff(ix,iy,iz,ie,ifield)
-          mu_t=rans_mut(ix,iy,iz,ie)
-          mul(ix,iy,iz,ie)=udiff  !RANS models need molecular viscosity
-          vdiff(ix,iy,iz,ie,ifield)=udiff+mu_t
- 10     continue
+        mu_t=rans_mut(1,1,1,1) !trigger update if necessary
+        call copy(mul,vdiff,n) !copy molecular viscosity
+        call add2(vdiff,mut,n)
       elseif(ifield.eq.ifld_k) then
         call copy(vtrans(1,1,1,1,ifld_k),vtrans,n)
-        do 20 ie = 1,nelv
-        do 20 iz = 1,lz1
-        do 20 iy = 1,ly1
-        do 20 ix = 1,lx1
-          udiff=vdiff(ix,iy,iz,ie,ifield)
-          vdiff(ix,iy,iz,ie,ifield)=udiff+mutsk(ix,iy,iz,ie)
- 20     continue
+        call add2(vdiff(1,1,1,1,ifld_k),mutsk,n)
       elseif(ifield.eq.ifld_omg) then
         call copy(vtrans(1,1,1,1,ifld_omg),vtrans,n)
-        do 30 ie = 1,nelv
-        do 30 iz = 1,lz1
-        do 30 iy = 1,ly1
-        do 30 ix = 1,lx1
-          udiff=vdiff(ix,iy,iz,ie,ifield)
-          vdiff(ix,iy,iz,ie,ifield)=udiff+mutso(ix,iy,iz,ie)
- 30     continue
+        call add2(vdiff(1,1,1,1,ifld_omg),mutso,n)
       else  !temperature and all other scalars, assume Sc_t = Pr_t
+        mu_t=rans_mut(1,1,1,1) !trigger update if necessary
         Pr_t=rans_turbPrandtl()
-        do 40 ie = 1,nelv
-        do 40 iz = 1,lz1
-        do 40 iy = 1,ly1
-        do 40 ix = 1,lx1
-          mu_t=rans_mut(ix,iy,iz,ie)
-          utrans=vtrans(ix,iy,iz,ie,ifield)
-          utrns1=vtrans(ix,iy,iz,ie,1)
-          udiff=vdiff(ix,iy,iz,ie,ifield)
-          vdiff(ix,iy,iz,ie,ifield)=udiff+mu_t*utrans/(Pr_t*utrns1)
- 40     continue
+        call col3(w1,mut,vtrans(1,1,1,1,ifield),n)
+        call invcol2(w1,vtrans,n)
+        call cmult(w1,1.0/Pr_t,n)
+        call add2(vdiff(1,1,1,1,ifield),w1,n)
       endif
 
       return
