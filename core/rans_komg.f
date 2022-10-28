@@ -7,18 +7,35 @@
       data ifldla /ldimt1/ 
 
       if(ix*iy*iz*iel.eq.1 .and. ifield.le.ifldla) then
-         if(nid.eq.0 .and. loglevel.gt.2) write(6,*) 'updating rans_mut'
-         if(ifrans_komg_stndrd)      call rans_komg_stndrd_eddy
-         if(ifrans_komg_lowRe)       call rans_komg_lowRe_eddy
-         if(ifrans_komgSST_stndrd)   call rans_komgSST_stndrd_eddy
-         if(ifrans_komg_stndrd_noreg)call rans_komg_stndrd_eddy_noreg
-         if(ifrans_ktau_stndrd)      call rans_ktau_stndrd_eddy
-         if(ifrans_ktau_lowRe)       call rans_ktau_lowRe_eddy
-         if(ifrans_ktauSST_stndrd)   call rans_ktauSST_stndrd_eddy
+        call rans_updatemut
       endif
 
       ifldla = ifield
       rans_mut = mut(ix,iy,iz,iel)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rans_updatemut
+      include 'SIZE'
+      include 'RANS'
+
+      if(nid.eq.0 .and. loglevel.gt.2) write(6,*) 'updating rans_mut'
+      if(ifrans_komg_stndrd) then
+        call rans_komg_stndrd_eddy
+      elseif(ifrans_komg_lowRe) then
+        call rans_komg_lowRe_eddy
+      elseif(ifrans_komgSST_stndrd) then
+        call rans_komgSST_stndrd_eddy
+      elseif(ifrans_komg_stndrd_noreg) then
+        call rans_komg_stndrd_eddy_noreg
+      elseif(ifrans_ktau_stndrd) then
+        call rans_ktau_stndrd_eddy
+      elseif(ifrans_ktau_lowRe) then
+        call rans_ktau_lowRe_eddy
+      elseif(ifrans_ktauSST_stndrd) then
+        call rans_ktauSST_stndrd_eddy
+      endif
 
       return
       end
@@ -76,14 +93,7 @@ c-----------------------------------------------------------------------
       common /komgifsrc/ ifevalsrc
 
       if(ix*iy*iz*iel.eq.1 .and. ifevalsrc) then
-         if(nid.eq.0 .and. loglevel.gt.2) write(6,*) 'updating rans_src'
-         if(ifrans_komg_stndrd)      call rans_komg_stndrd_compute
-         if(ifrans_komg_lowRe)       call rans_komg_lowRe_compute
-         if(ifrans_komgSST_stndrd)   call rans_komgSST_stndrd_compute
-         if(ifrans_komg_stndrd_noreg)call rans_komg_stndrd_compute_noreg
-         if(ifrans_ktau_stndrd)      call rans_ktau_stndrd_compute
-         if(ifrans_ktau_lowRe)       call rans_ktau_lowRe_compute
-         if(ifrans_ktauSST_stndrd)   call rans_ktauSST_stndrd_compute
+         call rans_updateSrc
          ifevalsrc = .false.
       endif
 
@@ -103,14 +113,7 @@ c-----------------------------------------------------------------------
       common /komgifsrc/ ifevalsrc
 
       if(ix*iy*iz*iel.eq.1 .and. ifevalsrc) then
-         if(nid.eq.0 .and. loglevel.gt.2) write(6,*) 'updating rans_src'
-         if(ifrans_komg_stndrd)      call rans_komg_stndrd_compute
-         if(ifrans_komg_lowRe)       call rans_komg_lowRe_compute
-         if(ifrans_komgSST_stndrd)   call rans_komgSST_stndrd_compute
-         if(ifrans_komg_stndrd_noreg)call rans_komg_stndrd_compute_noreg
-         if(ifrans_ktau_stndrd)      call rans_ktau_stndrd_compute
-         if(ifrans_ktau_lowRe)       call rans_ktau_lowRe_compute
-         if(ifrans_ktauSST_stndrd)   call rans_ktauSST_stndrd_compute
+         call rans_updateSrc
          ifevalsrc = .false.
       endif
 
@@ -130,14 +133,7 @@ c-----------------------------------------------------------------------
       common /komgifsrc/ ifevalsrc
 
       if(ix*iy*iz*iel.eq.1 .and. ifevalsrc) then
-         if(nid.eq.0 .and. loglevel.gt.2) write(6,*) 'updating rans_src'
-         if(ifrans_komg_stndrd)      call rans_komg_stndrd_compute
-         if(ifrans_komg_lowRe)       call rans_komg_lowRe_compute
-         if(ifrans_komgSST_stndrd)   call rans_komgSST_stndrd_compute
-         if(ifrans_komg_stndrd_noreg)call rans_komg_stndrd_compute_noreg
-         if(ifrans_ktau_stndrd)      call rans_ktau_stndrd_compute
-         if(ifrans_ktau_lowRe)       call rans_ktau_lowRe_compute
-         if(ifrans_ktauSST_stndrd)   call rans_ktauSST_stndrd_compute
+         call rans_updateSrc
          ifevalsrc = .false.
       endif
 
@@ -157,19 +153,37 @@ c-----------------------------------------------------------------------
       common /komgifsrc/ ifevalsrc
 
       if(ix*iy*iz*iel.eq.1 .and. ifevalsrc) then
-         if(nid.eq.0 .and. loglevel.gt.2) write(6,*) 'updating rans_src'
-         if(ifrans_komg_stndrd)      call rans_komg_stndrd_compute
-         if(ifrans_komg_lowRe)       call rans_komg_lowRe_compute
-         if(ifrans_komgSST_stndrd)   call rans_komgSST_stndrd_compute
-         if(ifrans_komg_stndrd_noreg)call rans_komg_stndrd_compute_noreg
-         if(ifrans_ktau_stndrd)      call rans_ktau_stndrd_compute
-         if(ifrans_ktau_lowRe)       call rans_ktau_lowRe_compute
-         if(ifrans_ktauSST_stndrd)   call rans_ktauSST_stndrd_compute
+         call rans_updateSrc 
          ifevalsrc = .false.
       endif
 
       if(ifld_omg.gt.ifld_k) ifevalsrc = .true.
       rans_omgDiag = omgDiag(ix,iy,iz,iel)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rans_updateSrc
+      include 'SIZE'
+      include 'RANS'
+
+      if(nio.eq.0.and.loglevel.gt.2) write(6,*) 'updating rans_src'
+
+      if(ifrans_komg_stndrd)then
+        call rans_komg_stndrd_compute
+      elseif(ifrans_komg_lowRe)then
+        call rans_komg_lowRe_compute
+      elseif(ifrans_komgSST_stndrd)then
+        call rans_komgSST_stndrd_compute
+      elseif(ifrans_komg_stndrd_noreg)then
+        call rans_komg_stndrd_compute_noreg
+      elseif(ifrans_ktau_stndrd)then
+        call rans_ktau_stndrd_compute
+      elseif(ifrans_ktau_lowRe)then
+        call rans_ktau_lowRe_compute
+      elseif(ifrans_ktauSST_stndrd)then
+        call rans_ktauSST_stndrd_compute
+      endif
 
       return
       end
@@ -324,7 +338,7 @@ c-----------------------------------------------------------------------
       if(nio.eq.0.and.loglevel.gt.2) write(6,*) 'rans_props ',ifield
 
       if(ifield.eq.1) then
-        mu_t=rans_mut(1,1,1,1) !trigger update if necessary
+        call rans_updatemut
         call copy(mul,vdiff,n) !copy molecular viscosity
         call add2(vdiff,mut,n)
       elseif(ifield.eq.ifld_k) then
@@ -334,7 +348,6 @@ c-----------------------------------------------------------------------
         call copy(vtrans(1,1,1,1,ifld_omg),vtrans,n)
         call add2(vdiff(1,1,1,1,ifld_omg),mutso,n)
       else  !temperature and all other scalars, assume Sc_t = Pr_t
-        mu_t=rans_mut(1,1,1,1) !trigger update if necessary
         Pr_t=rans_turbPrandtl()
         call col3(w1,mut,vtrans(1,1,1,1,ifield),n)
         call invcol2(w1,vtrans,n)
@@ -353,12 +366,11 @@ c-----------------------------------------------------------------------
 
       real bql(lx1*ly1*lz1*lelt),aql(lx1*ly1*lz1*lelt)
       integer n
-      real srcdd,rans_kSrc
 
       n=lx1*ly1*lz1*nelv
 
       if(ifield.eq.ifld_k) then
-        srcdd=rans_kSrc(1,1,1,1) !trigger source term update if necessary
+        call rans_updateSrc !safe to assume ifld_k < ifld_omg
         call add2(bql,kSrc,n)
         call add2(aql,kDiag,n)
       elseif(ifield.eq.ifld_omg) then

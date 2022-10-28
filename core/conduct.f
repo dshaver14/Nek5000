@@ -113,6 +113,7 @@ c     mass matrix on the Gauss-Lobatto mesh.
       include 'MASS'
       include 'SOLN'
       include 'TSTEP'
+      include 'RANS'
 
       n = lx1*ly1*lz1*nelfld(ifield)
 
@@ -122,7 +123,7 @@ c     mass matrix on the Gauss-Lobatto mesh.
      $   write(6,*) 'makeuq', ifield, time
       call setqvol (bq(1,1,1,1,ifield-1),adq(1,1,1,1,ifield-1))
       if(ifrans)
-     &  call setqrans(bq(1,1,1,1,ifield-1),adq(1,1,1,1,ifield-1))
+     &         call setqrans(bq(1,1,1,1,ifield-1),adq(1,1,1,1,ifield-1))
       call col2    (bq(1,1,1,1,ifield-1) ,bm1,n)
 
       if (.not.ifcvfld(ifield)) time = time+dt ! Restore time
