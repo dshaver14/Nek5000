@@ -1,4 +1,5 @@
       real function rans_mut(ix,iy,iz,iel)
+      implicit none
       include 'SIZE'
       include 'TSTEP'
       include 'RANS'
@@ -17,6 +18,7 @@
       end
 c-----------------------------------------------------------------------
       subroutine rans_updatemut
+      implicit none
       include 'SIZE'
       include 'RANS'
 
@@ -41,6 +43,7 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       real function rans_turbPrandtl()
+      implicit none
       include 'SIZE'
       include 'RANS'
 
@@ -50,6 +53,7 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       real function rans_mutsk(ix,iy,iz,iel)
+      implicit none
       include 'SIZE'
       include 'TSTEP'
       include 'RANS'
@@ -60,6 +64,7 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       real function rans_mutso(ix,iy,iz,iel)
+      implicit none
       include 'SIZE'
       include 'TSTEP'
       include 'RANS'
@@ -70,10 +75,12 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine rans_komg_getCoeffs(coeffs_in)
+      implicit none
       include 'SIZE'
       include 'TSTEP'
       include 'RANS'
 
+      integer i
       real coeffs_in(1)
 
       do i=1,ncoeffs
@@ -84,6 +91,7 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       real function rans_kSrc(ix,iy,iz,iel)
+      implicit none
       include 'SIZE'
       include 'TSTEP'
       include 'RANS'
@@ -104,6 +112,7 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       real function rans_omgSrc(ix,iy,iz,iel)
+      implicit none
       include 'SIZE'
       include 'TSTEP'
       include 'RANS'
@@ -124,6 +133,7 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       real function rans_kDiag(ix,iy,iz,iel)
+      implicit none
       include 'SIZE'
       include 'TSTEP'
       include 'RANS'
@@ -144,6 +154,7 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       real function rans_omgDiag(ix,iy,iz,iel)
+      implicit none
       include 'SIZE'
       include 'TSTEP'
       include 'RANS'
@@ -164,6 +175,7 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine rans_updateSrc
+      implicit none
       include 'SIZE'
       include 'RANS'
 
@@ -194,9 +206,9 @@ c
 c     Initialize values ifld_omg & ifld_k for RANS k-omega turbulence
 c     modeling
 c
+      implicit none
       include 'SIZE'
       include 'TOTAL'
-      include 'RANS'
 
       real w1,w2,w3,w4,w5
       common /SCRNS/
@@ -207,7 +219,6 @@ c
      &,w5(lx1*ly1*lz1*lelv)
 
       integer n,wall_id,ifld_mx
-c     real coeffs_in(*),ywd_in(*)
       logical ifcoeffs,ifransD
 
       character*3 bcw
@@ -248,56 +259,51 @@ c     real coeffs_in(*),ywd_in(*)
       if(rans_id.eq.5) ifrans_ktau_lowRe           = .TRUE.
       if(rans_id.eq.6) ifrans_ktauSST_stndrd       = .TRUE.
 
+c characters for the Helmholtz solver
+      write(rans4ch1,'(A4)') 'TKE '
+      if(rans_id.le.3) write(rans4ch2,'(A4)'),'OMG '
+      if(rans_id.gt.3) write(rans4ch2,'(A4)'),'TAU '
+
 c split diagonal of the source term into implicit, by Sigfried
       ifrans_diag=.TRUE.
 
-      ifld_k     = npscal+1
+c RANS scalars are the last two
+      ifld_k   = npscal+1
       ifld_omg = npscal+2
       ifld_tau = ifld_omg
       ifld_mx=max(ifld_k,ifld_omg)
       if (ifld_mx.gt.ldimt1)
      $  call exitti('nflds gt ldimt+1, recompile with ldimt > ',
      $  ifld_mx+1)
-      if(nid.eq.0) then
+      if(nio.eq.0) then
         write(*,'(a,a)') '  model: ',mname(rans_id+1)
         write(*,*)       '  ifrans_diag: ',ifrans_diag
-        write(*,*) ' ifld_k = ',ifld_k
-        write(*,*) ' ifld_omg = ',ifld_omg
+        write(*,*) '  ifld_k = ',ifld_k
+        write(*,*) '  ifld_omg = ',ifld_omg
       endif
 
+c Set solver tolerances same as fluid
+      restol(ifld_k  )=restol(1)
+      restol(ifld_omg)=restol(1)
+
+c load constant property arrays from fluid
       cpfld(ifld_k,1)=cpfld(1,1)
       cpfld(ifld_k,2)=cpfld(1,2)
       cpfld(ifld_omg,1)=cpfld(1,1)
       cpfld(ifld_omg,2)=cpfld(1,2)
+
 ! specify k-omega model coefficients
-
-
-c     if(ifcoeffs) then !coefficients can be changed in usrdat3
-c       if(ncoeffs_in.lt.ncoeffs) call exitti(
-c    $   'dim of user provided komg coeffs array should be >=$',ncoeffs)
-c       do i=1,ncoeffs
-c         coeffs(i) =coeffs_in(i)
-c       enddo
-c     else
-        if(ifrans_komg_stndrd .or. ifrans_komg_lowRe .or.
+      if(ifrans_komg_stndrd .or. ifrans_komg_lowRe .or.
      $  ifrans_komg_stndrd_noreg .or. ifrans_ktau_stndrd .or.
      $  ifrans_ktau_lowRe) call rans_komg2006_set_defaultcoeffs
-        if(ifrans_komgSST_stndrd .or. ifrans_ktauSST_stndrd)
+      if(ifrans_komgSST_stndrd .or. ifrans_ktauSST_stndrd)
      $                               call rans_komgSST_set_defaultcoeffs
-c     endif
-
 
 c setup wall distance
-c     if(wall_id.eq.0) then
-c       if(nid.eq.0) write(6,*) ' user supplied wall distance'
-c       call copy(ywd,ywd_in,n)
-c     else
-        bcw    = 'W  '
-        ifld   = 1
-        if(nid.eq.0) write(6,*) 'BC for distance ',bcw
-        call distf(ywd,ifld,bcw,w1,w2,w3,w4,w5)
-c       call copy(ywd_in,ywd,n)
-c     endif
+      bcw    = 'W  '
+      ifld   = 1
+      if(nid.eq.0) write(6,*) '  BC for distance ',bcw
+      call distf(ywd,ifld,bcw,w1,w2,w3,w4,w5)
 
 c set cbc array for k and omega/tau (need to revise for wall-functions)
       do 10 ie = 1,nelv
@@ -305,10 +311,10 @@ c set cbc array for k and omega/tau (need to revise for wall-functions)
         bcw=cbc(ifc,ie,1)
         cbc(ifc,ie,ifld_k)=bcw
         cbc(ifc,ie,ifld_omg)=bcw
-        if(bcw.eq.'W  '.or.bc1.eq.'v') then
+        if(bcw.eq.'W  '.or.bc1.eq.'v') then !cover 'vl ' BCs
           cbc(ifc,ie,ifld_k)='t  '
           cbc(ifc,ie,ifld_omg)='t  '
-        elseif(bcw.eq.'SYM'.or.bcw.eq.'O  '.or.bc1.eq.'o') then
+        elseif(bcw.eq.'SYM'.or.bcw.eq.'O  '.or.bc1.eq.'o') then !cover 'on ' BCs
           cbc(ifc,ie,ifld_k)='I  '
           cbc(ifc,ie,ifld_omg)='I  '
         endif
@@ -325,11 +331,9 @@ c-----------------------------------------------------------------------
       implicit none
       include 'SIZE'
       include 'TOTAL'
-      include 'NEKUSE'
-      include 'RANS'
 
       integer n
-      real rans_mut,rans_turbPrandtl,utrns1,w1
+      real Pr_t,rans_turbPrandtl,w1
 
       common /SCRNS/ w1(lx1*ly1*lz1*lelv)
 
@@ -386,9 +390,9 @@ c
 c     Compute RANS source terms and diffusivities on an 
 c     element-by-element basis
 c
+      implicit none
       include 'SIZE'
       include 'TOTAL'
-      include 'RANS'
 
       parameter (lxyz=lx1*ly1*lz1)
 
@@ -636,9 +640,9 @@ c
 c     Compute RANS source terms and diffusivities on an 
 c     element-by-element basis
 c
+      implicit none
       include 'SIZE'
       include 'TOTAL'
-      include 'RANS'
 
       parameter (lxyz=lx1*ly1*lz1)
 
@@ -907,9 +911,9 @@ c
 c     Compute RANS source terms and diffusivities on an 
 c     element-by-element basis
 c
+      implicit none
       include 'SIZE'
       include 'TOTAL'
-      include 'RANS'
 
       parameter (lxyz=lx1*ly1*lz1)
 
@@ -1164,9 +1168,9 @@ c
 c     Compute RANS source terms and diffusivities on an 
 c     element-by-element basis
 c
+      implicit none
       include 'SIZE'
       include 'TOTAL'
-      include 'RANS'
 
       parameter (lxyz=lx1*ly1*lz1)
 
@@ -1359,9 +1363,9 @@ c
 c     Compute RANS source terms and diffusivities on an 
 c     element-by-element basis
 c
+      implicit none
       include 'SIZE'
       include 'TOTAL'
-      include 'RANS'
 
       parameter (lxyz=lx1*ly1*lz1)
 
@@ -1566,9 +1570,9 @@ c
 c     Compute RANS source terms and diffusivities on an 
 c     element-by-element basis
 c
+      implicit none
       include 'SIZE'
       include 'TOTAL'
-      include 'RANS'
 
       parameter (lxyz=lx1*ly1*lz1)
 
@@ -1779,9 +1783,9 @@ c
 c     Compute RANS source terms and diffusivities on an 
 c     element-by-element basis
 c
+      implicit none
       include 'SIZE'
       include 'TOTAL'
-      include 'RANS'
 
       parameter (lxyz=lx1*ly1*lz1)
 
@@ -2003,11 +2007,13 @@ c-----------------------------------------------------------------------
 c
 c     Compute Omega base solution which diverges at walls
 c
+      implicit none
       include 'SIZE'
       include 'TOTAL'
-      include 'RANS'
 
-      integer ix,iy,iz,e ! had to change index k to iz to avoid conflict with real k (TKE) in RANS
+      integer ix,iy,iz,e,ntot1,ieg
+      real ywmin,ywm4,ywm3,ywm2,ywm1,yw,toll,omeg_max,beta0,nu,expn
+      real betainf_str,Cfcon,delsqfpart,delfpart
 
 c     real dudx(lx1,ly1,lz1,lelv), dudy(lx1,ly1,lz1,lelv)
 c    $   , dudz(lx1,ly1,lz1,lelv), temt(lx1,ly1,lz1,lelv)
@@ -2018,11 +2024,10 @@ c    $   , dudz(lx1,ly1,lz1,lelv), temt(lx1,ly1,lz1,lelv)
       ntot1 = nx1*ny1*nz1*nelv
 
       betainf_str = coeffs(11)
-      yw_min = glmin(ywd,ntot1)
 
       Cfcon = 6.0 * nu / beta0 ! 2.0 * nu0 / betainf_str ! 
       expn  = -2.0
-c     write(*,*) 'Cf, beta, ywd_min is ', Cfcon, betainf_str, yw_min
+c     write(*,*) 'Cf, beta, ywd_min is ', Cfcon, betainf_str
 
       call gradm1 (dfdx_omegb,dfdy_omegb,dfdz_omegb,   ywd)
       call opcolv (dfdx_omegb,dfdy_omegb,dfdz_omegb,   bm1)
@@ -2084,8 +2089,15 @@ c    $                         ,dfdx_omegb,dfdy_omegb,dfdz_omegb,ntot1)
 c-----------------------------------------------------------------------
       subroutine rans_komg_set_defaultcoeffs
 c
+      implicit none
       include 'SIZE'
       include 'RANS'
+
+      real vkappa,Pr_t,sigma_k,sigma_omega,alpinf_str,r_k,beta_0
+      real alp0_str,betainf_str,alp_inf,r_b,akk,alpha_0,r_w,kv_min
+      real omeg_max,tiny,fb_c1,fb_c2,fb_c1st,fb_c2st,sigd_max,ywlim
+      real sigd_min,Clim,edd_frac_free,tke_frac_free,yplus,Hlen
+    
 
 c ====various problem-specific turbulence constants
 c omeg_max = value of omega on the walls
@@ -2285,6 +2297,7 @@ c yplus boundary related to wall functions
 c-----------------------------------------------------------------------
       subroutine rans_komgSST_set_defaultcoeffs
 c
+      implicit none
       include 'SIZE'
       include 'RANS'
 
@@ -2381,9 +2394,9 @@ c
 c     Compute RANS source terms and diffusivities on an 
 c     element-by-element basis
 c
+      implicit none
       include 'SIZE'
       include 'TOTAL'
-      include 'RANS'
 
       parameter (lxyz=lx1*ly1*lz1)
 
@@ -2480,9 +2493,9 @@ c
 c     Compute RANS source terms and diffusivities on an 
 c     element-by-element basis
 c
+      implicit none
       include 'SIZE'
       include 'TOTAL'
-      include 'RANS'
 
       parameter (lxyz=lx1*ly1*lz1)
 
@@ -2581,9 +2594,9 @@ c
 c     Compute RANS source terms and diffusivities on an 
 c     element-by-element basis
 c
+      implicit none
       include 'SIZE'
       include 'TOTAL'
-      include 'RANS'
 
       parameter (lxyz=lx1*ly1*lz1)
 
@@ -2727,9 +2740,9 @@ c
 c     Compute RANS source terms and diffusivities on an 
 c     element-by-element basis
 c
+      implicit none
       include 'SIZE'
       include 'TOTAL'
-      include 'RANS'
 
       parameter (lxyz=lx1*ly1*lz1)
 
@@ -2838,9 +2851,9 @@ c
 c     Compute RANS source terms and diffusivities on an 
 c     element-by-element basis
 c
+      implicit none
       include 'SIZE'
       include 'TOTAL'
-      include 'RANS'
 
       parameter (lxyz=lx1*ly1*lz1)
 
@@ -2936,9 +2949,9 @@ c
 c     Compute RANS source terms and diffusivities on an 
 c     element-by-element basis
 c
+      implicit none
       include 'SIZE'
       include 'TOTAL'
-      include 'RANS'
 
       parameter (lxyz=lx1*ly1*lz1)
 
@@ -3038,9 +3051,9 @@ c
 c     Compute RANS source terms and diffusivities on an 
 c     element-by-element basis
 c
+      implicit none
       include 'SIZE'
       include 'TOTAL'
-      include 'RANS'
 
       parameter (lxyz=lx1*ly1*lz1)
 
@@ -3188,14 +3201,17 @@ c     Compute the square of the magnitude of the stress and rotation tensors
 c     St_mag2=2Sij*Sij=S'ij*S'ij/2, S'ij=2Sij, Sij=(dui/dxj+duj/dxi)/2
 c     Om_mag2=2Oij*Oij=O'ij*O'ij/2, O'ij=OSij, Oij=(dui/dxj-duj/dxi)/2
 c
+      implicit none
       include 'SIZE'
       include 'TOTAL'
 c
-      integer e
+      integer e,lt,lxyz,nij
+      real thqrt
 
       parameter(lt  =lx1*ly1*lz1*lelv)
       parameter(lxyz=lx1*ly1*lz1)
 
+      real sij,oij
       common /scruz/    sij  (lx1*ly1*lz1,6,lelv)
      $                , oij  (lx1*ly1*lz1,lelv,3)
 
@@ -3232,10 +3248,11 @@ c                                       du_i       du_j
 c     Compute the stress tensor S_ij := ----   +   ----
 c                                       du_j       du_i
 c
+      implicit none
       include 'SIZE'
       include 'TOTAL'
 c
-      integer e
+      integer e,nij,lt,lxyz,n,nxyz,ifielt,i
       logical iflmc, ifdss
 c
       parameter(lt  =lx1*ly1*lz1*lelv)
@@ -3251,6 +3268,7 @@ c
      $    ,wr(lxyz),ws(lxyz),wt(lxyz)
 
       real j ! Inverse Jacobian
+      real trs,r,onethird
 
       n    = lx1-1      ! Polynomial degree
       nxyz = lx1*ly1*lz1
@@ -3421,10 +3439,12 @@ c
 c-----------------------------------------------------------------------
       subroutine dssum_sij_oij(sij,oij,nij)
 c
+      implicit none
       include 'SIZE'
       include 'TOTAL'
 c
-      integer e
+      integer e,nij,nxyz,ntot,lt,lxyz
+      real work1,work2,work3
 c
       parameter(lt  =lx1*ly1*lz1*lelv)
       parameter(lxyz=lx1*ly1*lz1)
@@ -3552,10 +3572,11 @@ c     Compute the square of the magnitude of the stress and rotation tensors
 c     St_mag2=2Sij*Sij=S'ij*S'ij/2, S'ij=2Sij, Sij=(dui/dxj+duj/dxi)/2
 c     Om_mag2=2Oij*Oij=O'ij*O'ij/2, O'ij=OSij, Oij=(dui/dxj-duj/dxi)/2
 c
+      implicit none
       include 'SIZE'
       include 'TOTAL'
 c
-      integer e
+      integer e,nij,ntot,nxyz,lt,lxyz
 c
       parameter(lt  =lx1*ly1*lz1*lelv)
       parameter(lxyz=lx1*ly1*lz1)
@@ -3568,7 +3589,9 @@ c
 
       common /scrsij/  work1(lx1*ly1*lz1,lelv), work2(lx1*ly1*lz1,lelv)
      $                                        , work3(lx1*ly1*lz1,lelv)
+      real work1,work2,work3
       real tmp1(lxyz), tmp2(lxyz), tmp3(lxyz)
+      real two,onehalf,onethird,oneeight,beta
 
       nxyz    = lx1*ly1*lz1
       ntot    = nxyz*nelv
@@ -3647,7 +3670,6 @@ c-----------------------------------------------------------------------
       implicit real(a-h,o-z)
       include 'SIZE'
       include 'TOTAL'
-      include 'RANS'
 c
       integer e
 
@@ -3707,7 +3729,6 @@ c-----------------------------------------------------------------------
       implicit real(a-h,o-z)
       include 'SIZE'
       include 'TOTAL'
-      include 'RANS'
 c
       integer e
 
@@ -3767,7 +3788,6 @@ c-----------------------------------------------------------------------
       implicit real(a-h,o-z)
       include 'SIZE'
       include 'TOTAL'
-      include 'RANS'
 c
       integer e
 

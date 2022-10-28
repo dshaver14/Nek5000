@@ -10,6 +10,7 @@ C
       include 'SOLN'
       include 'MASS'
       include 'TSTEP'
+      include 'RANS'
       COMMON  /CPRINT/ IFPRINT
       LOGICAL          IFPRINT
       LOGICAL          IFCONV
@@ -49,6 +50,8 @@ C
          write(name4t,1) if1-1
     1    format('PS',i2)
          if(ifield.eq.2) write(name4t,'(A4)') 'TEMP'
+         if(ifield.eq.ifld_k  ) write(name4t,'(A4)') rans4ch1
+         if(ifield.eq.ifld_omg) write(name4t,'(A4)') rans4ch2
 
 C
 C        New geometry

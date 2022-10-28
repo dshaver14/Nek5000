@@ -2623,7 +2623,6 @@ C------------------------------------------------------------------------
       include 'SIZE'
       include 'TOTAL'
       include 'CTIMER'
-      include 'RANS'
 C
 C     Caution: 2nd and 3rd strainrate invariants residing in scratch
 C              common /SCREV/ are used in STNRINV and NEKASGN

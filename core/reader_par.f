@@ -346,7 +346,7 @@ c set parameters
             j = j + 1 
             imx = max(imx,i)
             ifpsco(i) = .true.
-            idpss(i+1) = 0 ! Helmholtz is default !do this later with the other solvers
+            idpss(i+1) = 0 ! Helmholtz is default
          endif
       enddo
       if(imx.gt.j) then
