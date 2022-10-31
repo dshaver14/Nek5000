@@ -4,6 +4,7 @@
       include 'TSTEP'
       include 'RANS'
 
+      integer ix,iy,iz,iel,ifldla
       save ifldla
       data ifldla /ldimt1/ 
 
@@ -58,6 +59,8 @@ c-----------------------------------------------------------------------
       include 'TSTEP'
       include 'RANS'
 
+      integer ix,iy,iz,iel
+
       rans_mutsk = mutsk(ix,iy,iz,iel)
 
       return
@@ -68,6 +71,8 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'TSTEP'
       include 'RANS'
+
+      integer ix,iy,iz,iel
 
       rans_mutso = mutso(ix,iy,iz,iel)
 
@@ -99,6 +104,7 @@ c-----------------------------------------------------------------------
       logical ifevalsrc
       data ifevalsrc /.true./
       common /komgifsrc/ ifevalsrc
+      integer ix,iy,iz,iel
 
       if(ix*iy*iz*iel.eq.1 .and. ifevalsrc) then
          call rans_updateSrc
@@ -120,6 +126,7 @@ c-----------------------------------------------------------------------
       logical ifevalsrc
       data ifevalsrc /.true./
       common /komgifsrc/ ifevalsrc
+      integer ix,iy,iz,iel
 
       if(ix*iy*iz*iel.eq.1 .and. ifevalsrc) then
          call rans_updateSrc
@@ -141,6 +148,7 @@ c-----------------------------------------------------------------------
       logical ifevalsrc
       data ifevalsrc /.true./
       common /komgifsrc/ ifevalsrc
+      integer ix,iy,iz,iel
 
       if(ix*iy*iz*iel.eq.1 .and. ifevalsrc) then
          call rans_updateSrc
@@ -162,6 +170,7 @@ c-----------------------------------------------------------------------
       logical ifevalsrc
       data ifevalsrc /.true./
       common /komgifsrc/ ifevalsrc
+      integer ix,iy,iz,iel
 
       if(ix*iy*iz*iel.eq.1 .and. ifevalsrc) then
          call rans_updateSrc 
@@ -218,7 +227,7 @@ c
      &,w4(lx1*ly1*lz1*lelv)
      &,w5(lx1*ly1*lz1*lelv)
 
-      integer n,wall_id,ifld_mx
+      integer n,wall_id,ifld_mx,ifld,ifc,ie
       logical ifcoeffs,ifransD
 
       character*3 bcw
@@ -394,6 +403,7 @@ c
       include 'SIZE'
       include 'TOTAL'
 
+      integer lxyz
       parameter (lxyz=lx1*ly1*lz1)
 
       real           k_x(lxyz),k_y(lxyz),k_z(lxyz)
@@ -411,11 +421,13 @@ c
      $                , Om_mag2(lx1*ly1*lz1,lelv)
      $                , OiOjSk (lx1*ly1*lz1,lelv)
      $                , DivQ   (lx1*ly1*lz1,lelv)
+      real St_mag2,Om_mag2,OiOjSk,DivQ
 
       integer e
 
+      real rho,mu,nu,omega,k
       real mu_omeg(lxyz), mu_omegx(lxyz), mu_omegy(lxyz), mu_omegz(lxyz)
-      real extra_src_omega(lxyz),k
+      real extra_src_omega(lxyz)
 
 c Turbulent viscosity constants
         Pr_t         = coeffs( 1)
@@ -644,6 +656,7 @@ c
       include 'SIZE'
       include 'TOTAL'
 
+      integer lxyz
       parameter (lxyz=lx1*ly1*lz1)
 
       real           k_x(lxyz),k_y(lxyz),k_z(lxyz)
@@ -661,11 +674,13 @@ c
      $                , Om_mag2(lx1*ly1*lz1,lelv)
      $                , OiOjSk (lx1*ly1*lz1,lelv)
      $                , DivQ   (lx1*ly1*lz1,lelv)
+      real St_mag2,Om_mag2,OiOjSk,DivQ
 
       integer e
 
       real mu_omeg(lxyz), mu_omegx(lxyz), mu_omegy(lxyz), mu_omegz(lxyz)
-      real extra_src_omega(lxyz),k
+      real extra_src_omega(lxyz)
+      real rho,mu,nu,omega,k
 
 c Turbulent viscosity constants
         Pr_t         = coeffs( 1)
@@ -915,6 +930,7 @@ c
       include 'SIZE'
       include 'TOTAL'
 
+      integer lxyz
       parameter (lxyz=lx1*ly1*lz1)
 
       real           k_x(lxyz),k_y(lxyz),k_z(lxyz)
@@ -932,11 +948,13 @@ c
      $                , Om_mag2(lx1*ly1*lz1,lelv)
      $                , OiOjSk (lx1*ly1*lz1,lelv)
      $                , DivQ   (lx1*ly1*lz1,lelv)
+      real St_mag2,Om_mag2,OiOjSk,DivQ
 
       integer e
 
       real mu_omeg(lxyz), mu_omegx(lxyz), mu_omegy(lxyz), mu_omegz(lxyz)
-      real extra_src_omega(lxyz),k
+      real extra_src_omega(lxyz)
+      real rho,mu,nu,omega,k
 
 c Turbulent viscosity constants
         Pr_t         = coeffs( 1)
@@ -1172,6 +1190,7 @@ c
       include 'SIZE'
       include 'TOTAL'
 
+      integer lxyz
       parameter (lxyz=lx1*ly1*lz1)
 
       real           k_x(lxyz),k_y(lxyz),k_z(lxyz)
@@ -1184,9 +1203,10 @@ c
      $                , Om_mag2(lx1*ly1*lz1,lelv)
      $                , OiOjSk (lx1*ly1*lz1,lelv)
      $                , DivQ   (lx1*ly1*lz1,lelv)
+      real St_mag2,Om_mag2,OiOjSk,DivQ
 
-      integer e
-      real k
+      integer e,i
+      real rho,mu,nu,omega,k
 
         vkappa = 0.41
 
@@ -1367,6 +1387,7 @@ c
       include 'SIZE'
       include 'TOTAL'
 
+      integer lxyz
       parameter (lxyz=lx1*ly1*lz1)
 
       real           k_x(lxyz),k_y(lxyz),k_z(lxyz)
@@ -1382,9 +1403,10 @@ c
      $                , Om_mag2(lx1*ly1*lz1,lelv)
      $                , OiOjSk (lx1*ly1*lz1,lelv)
      $                , DivQ   (lx1*ly1*lz1,lelv)
+      real St_mag2,Om_mag2,OiOjSk,DivQ
 
       integer e
-      real k
+      real rho,mu,nu,tau,k
 
 c Turbulent viscosity constants
         Pr_t         = coeffs( 1)
@@ -1574,6 +1596,7 @@ c
       include 'SIZE'
       include 'TOTAL'
 
+      integer lxyz
       parameter (lxyz=lx1*ly1*lz1)
 
       real           k_x(lxyz),k_y(lxyz),k_z(lxyz)
@@ -1589,9 +1612,10 @@ c
      $                , Om_mag2(lx1*ly1*lz1,lelv)
      $                , OiOjSk (lx1*ly1*lz1,lelv)
      $                , DivQ   (lx1*ly1*lz1,lelv)
+      real St_mag2,Om_mag2,OiOjSk,DivQ
 
       integer e
-      real k
+      real rho,mu,nu,tau,k
 
 c Turbulent viscosity constants
         Pr_t         = coeffs( 1)
@@ -1787,6 +1811,7 @@ c
       include 'SIZE'
       include 'TOTAL'
 
+      integer lxyz
       parameter (lxyz=lx1*ly1*lz1)
 
       real           k_x(lxyz),k_y(lxyz),k_z(lxyz)
@@ -1806,9 +1831,20 @@ c
      $                , Om_mag2(lx1*ly1*lz1,lelv)
      $                , OiOjSk (lx1*ly1*lz1,lelv)
      $                , DivQ   (lx1*ly1*lz1,lelv)
+      real St_mag2,Om_mag2,OiOjSk,DivQ
 
-      integer e
-      real k
+      integer e,ntot,i
+      real k,mu_min,rho,mu,nu,tau,xk,xt,xtq,yw,ywm1,ywm2,arg2_1,arg2_2
+      real arg2,argF2,Fun2,tinySST,arg1_1,arg1_2,argF1,arg1,Fun1
+      real mu_t,mu_k,argn,denom,Rfact,Y_k,extra_prod,twothird
+      real G_k,G_p,beta,gamma,sigk,sigom,G_w,Y_w,S_wp,S_tau,S_taup
+      real St_magn,Om_magn
+      real Pr_t,sigk1,sigom1,alpinf_str,r_k,beta1
+      real alp0_str,beta_str,gamma1,r_b,akk,alpha_0,r_w,kv_min
+      real omeg_max,tiny,alp1,beta2,sigk2,sigom2,gamma2
+      real Hlen,ywlim,edd_frac_free,tke_frac_free,yplus
+
+      twothird=2./3.
 
 c Turbulent viscosity constants
         Pr_t         = coeffs( 1)
@@ -2197,103 +2233,107 @@ c ====various problem-specific turbulence constants
 c omeg_max = value of omega on the walls
 c kv_min = value of K on the walls
 c Pr_t is the turbulent prandtl number
+      real vkappa,Pr_t,sigma_k,sigma_omega,alpinf_str,r_k,beta_0
+      real alp0_str,betainf_str,alp_inf,r_b,akk,alpha_0,r_w,kv_min
+      real omeg_max,tiny,fb_c1,fb_c2,fb_c1st,fb_c2st,sigd_max,ywlim
+      real sigd_min,Clim,edd_frac_free,tke_frac_free,yplus,Hlen
 
-        logical if_cfl3d
-        if_cfl3d = .false.
+      logical if_cfl3d
+      if_cfl3d = .false.
 
-        vkappa = 0.41
+      vkappa = 0.41
 
 c Turbulent viscosity constants
-        Pr_t         = 0.85
-        coeffs( 1)   = Pr_t
-        sigma_k      = 1.0/0.6
-        coeffs( 2)   = sigma_k
-        sigma_omega  = 2.0
-        coeffs( 3)   = sigma_omega
+      Pr_t         = 0.85
+      coeffs( 1)   = Pr_t
+      sigma_k      = 1.0/0.6
+      coeffs( 2)   = sigma_k
+      sigma_omega  = 2.0
+      coeffs( 3)   = sigma_omega
 
 c Low Reynolds number correction constants
 
 c Production of K constants
-        alpinf_str   = 1.0
-        coeffs( 4)   = alpinf_str
-        r_k          = 6.0
-        coeffs( 5)   = r_k
-        beta_0       = 0.0708 ! should be 0.075 for SST
-        if(if_cfl3d) 
+      alpinf_str   = 1.0
+      coeffs( 4)   = alpinf_str
+      r_k          = 6.0
+      coeffs( 5)   = r_k
+      beta_0       = 0.0708 ! should be 0.075 for SST
+      if(if_cfl3d) 
      $  beta_0       = 0.075
-        coeffs( 6)   = beta_0
-        alp0_str     = beta_0/3.0
-        coeffs( 7)   = alp0_str
+      coeffs( 6)   = beta_0
+      alp0_str     = beta_0/3.0
+      coeffs( 7)   = alp0_str
 
 c Dissipation of K constants
-        betainf_str  = 0.09
-        coeffs( 8)   = betainf_str
-        alp_inf      = 0.52
-        if(if_cfl3d) 
-     $  alp_inf      = beta_0/betainf_str 
-     $               - vkappa**2/sqrt(betainf_str)/sigma_omega ! should be 0.52 for k-omega
-        coeffs( 9)   = alp_inf
-        r_b          = 8.0
-        coeffs(10)   = r_b
-        akk          = 4.0/15.0
-        coeffs(11)   = akk
+      betainf_str  = 0.09
+      coeffs( 8)   = betainf_str
+      alp_inf      = 0.52
+      if(if_cfl3d) 
+     $  alp_inf    = beta_0/betainf_str 
+     $             - vkappa**2/sqrt(betainf_str)/sigma_omega ! should be 0.52 for k-omega
+      coeffs( 9)   = alp_inf
+      r_b          = 8.0
+      coeffs(10)   = r_b
+      akk          = 4.0/15.0
+      coeffs(11)   = akk
 
 c Production of omega constants
-        alpha_0      = 1.0/9.0
-        coeffs(12)   = alpha_0
-        r_w          = 2.95
-        coeffs(13)   = r_w
+      alpha_0      = 1.0/9.0
+      coeffs(12)   = alpha_0
+      r_w          = 2.95
+      coeffs(13)   = r_w
 
 c Dissipation of omega constants
-        kv_min       = 0.0
-        coeffs(14)   = kv_min
-        omeg_max     = 2.0e10 ! 400.0 Lan
-        coeffs(15)   = omeg_max
-        tiny         = 1.e-8
-        coeffs(16)   = tiny
+      kv_min       = 0.0
+      coeffs(14)   = kv_min
+      omeg_max     = 2.0e10 ! 400.0 Lan
+      coeffs(15)   = omeg_max
+      tiny         = 1.e-8
+      coeffs(16)   = tiny
 
 c additional constants 
-        fb_c1        = 85.0
-        coeffs(17)   = fb_c1
-        fb_c2        = 100.0
-        coeffs(18)   = fb_c2
-        fb_c1st      = 400.0
-        coeffs(19)   = fb_c1st
-        fb_c2st      = 400.0
-        coeffs(20)   = fb_c2st
+      fb_c1        = 85.0
+      coeffs(17)   = fb_c1
+      fb_c2        = 100.0
+      coeffs(18)   = fb_c2
+      fb_c1st      = 400.0
+      coeffs(19)   = fb_c1st
+      fb_c2st      = 400.0
+      coeffs(20)   = fb_c2st
 
-        sigd_min     = 0.0
-        coeffs(21)   = sigd_min
-        sigd_max     = 1.0/8.0
-        coeffs(22)   = sigd_max
-        Clim         = 7.0/8.0
-        coeffs(23)   = Clim     
+      sigd_min     = 0.0
+      coeffs(21)   = sigd_min
+      sigd_max     = 1.0/8.0
+      coeffs(22)   = sigd_max
+      Clim         = 7.0/8.0
+      coeffs(23)   = Clim     
 
 c constants related to limiting source terms or mu_t
-        Hlen         = 1.0
-        coeffs(24)   = Hlen
-        ywlim        = 0.5
-        coeffs(25)   = ywlim
-        edd_frac_free= 0.01
-        coeffs(26)   = edd_frac_free
-        tke_frac_free= 1.e-6
-        coeffs(27)   = tke_frac_free
-        
+      Hlen         = 1.0
+      coeffs(24)   = Hlen
+      ywlim        = 0.5
+      coeffs(25)   = ywlim
+      edd_frac_free= 0.01
+      coeffs(26)   = edd_frac_free
+      tke_frac_free= 1.e-6
+      coeffs(27)   = tke_frac_free
+      
 c yplus boundary related to wall functions
-        yplus        = 100.
-        coeffs(28)   = yplus
+      yplus        = 100.
+      coeffs(28)   = yplus
 
-        if(nid.eq.0) then
-          if(if_cfl3d) then
-            write(*,*) 'Using kw06_cfl3d coeffs'
-          else
-            write(*,*) 'Using kw06 coeffs'
-          endif
-          write(*,*) 'beta_0, alp_inf ', beta_0, alp_inf
+      if(nid.eq.0) then
+        if(if_cfl3d) then
+          write(*,*) 'Using kw06_cfl3d coeffs'
+        else
+          write(*,*) 'Using kw06 coeffs'
         endif
+        write(*,*) 'beta_0, alp_inf ', beta_0, alp_inf
+      endif
 
-        return
-        end
+      return
+      end
 c-----------------------------------------------------------------------
       subroutine rans_komgSST_set_defaultcoeffs
 c
@@ -2305,89 +2345,94 @@ c ====various problem-specific turbulence constants
 c omeg_max = value of omega on the walls
 c kv_min = value of K on the walls
 c Pr_t is the turbulent prandtl number
+      real vkappa,Pr_t,sigk1,sigom1,alpinf_str,r_k,beta_0
+      real alp0_str,betainf_str,alp_inf,r_b,akk,alpha_0,r_w,kv_min
+      real omeg_max,tiny,alp1,beta2,sigk2,sigom2,gamma2
+      real coeff22,coeff23
+      real Hlen,ywlim,edd_frac_free,tke_frac_free,yplus
 
-        vkappa = 0.41
+      vkappa = 0.41
 
 c Turbulent viscosity constants
-        Pr_t         = 0.85
-        coeffs( 1)   = Pr_t
-        sigk1        = 0.5 ! should be 0.85 for SST
-        coeffs( 2)   = sigk1
-        sigom1       = 0.5
-        coeffs( 3)   = sigom1
+      Pr_t         = 0.85
+      coeffs( 1)   = Pr_t
+      sigk1        = 0.5 ! should be 0.85 for SST
+      coeffs( 2)   = sigk1
+      sigom1       = 0.5
+      coeffs( 3)   = sigom1
 
 c Low Reynolds number correction constants
 
 c Production of K constants
-        alpinf_str   = 1.0
-        coeffs( 4)   = alpinf_str
-        r_k          = 6.0
-        coeffs( 5)   = r_k
-        beta_0       = 0.072 ! should be 0.075 for SST
-        coeffs( 6)   = beta_0
-        alp0_str     = beta_0/3.0
-        coeffs( 7)   = alp0_str
+      alpinf_str   = 1.0
+      coeffs( 4)   = alpinf_str
+      r_k          = 6.0
+      coeffs( 5)   = r_k
+      beta_0       = 0.072 ! should be 0.075 for SST
+      coeffs( 6)   = beta_0
+      alp0_str     = beta_0/3.0
+      coeffs( 7)   = alp0_str
 
 c Dissipation of K constants
-        betainf_str  = 0.09
-        coeffs( 8)   = betainf_str
-        alp_inf      = beta_0/betainf_str 
-     $               - sigom1 * vkappa**2/sqrt(betainf_str) ! should be 0.52 for k-omega
+      betainf_str  = 0.09
+      coeffs( 8)   = betainf_str
+      alp_inf      = beta_0/betainf_str 
+     $             - sigom1 * vkappa**2/sqrt(betainf_str) ! should be 0.52 for k-omega
 c        alp_inf      = 0.52
-        coeffs( 9)   = alp_inf
-        r_b          = 8.0
-        coeffs(10)   = r_b
-        akk          = 4.0/15.0
-        coeffs(11)   = akk
+      coeffs( 9)   = alp_inf
+      r_b          = 8.0
+      coeffs(10)   = r_b
+      akk          = 4.0/15.0
+      coeffs(11)   = akk
 
 c Production of omega constants
-        alpha_0      = 1.0/9.0
-        coeffs(12)   = alpha_0
-        r_w          = 2.95
-        coeffs(13)   = r_w
+      alpha_0      = 1.0/9.0
+      coeffs(12)   = alpha_0
+      r_w          = 2.95
+      coeffs(13)   = r_w
 
 c Dissipation of omega constants
-        kv_min       = 0.0
-        coeffs(14)   = kv_min
-        omeg_max     = 2.0e8 ! 400.0 
-        coeffs(15)   = omeg_max
-        tiny         = 1.e-8
-        coeffs(16)   = tiny
+      kv_min       = 0.0
+      coeffs(14)   = kv_min
+      omeg_max     = 2.0e8 ! 400.0 
+      coeffs(15)   = omeg_max
+      tiny         = 1.e-8
+      coeffs(16)   = tiny
 
 c additional SST and k and epsilon constants
-        alp1         = 0.31
-        coeffs(17)   = alp1
-        beta2        = 0.0828
-        coeffs(18)   = beta2
-        sigk2        = 1.0
-        coeffs(19)   = sigk2
-        sigom2       = 0.856
-        coeffs(20)   = sigom2
-        gamma2       = beta2/betainf_str 
-     $               - sigom2 * vkappa**2/sqrt(betainf_str) ! should be 0.44 for k-epsilon
+      alp1         = 0.31
+      coeffs(17)   = alp1
+      beta2        = 0.0828
+      coeffs(18)   = beta2
+      sigk2        = 1.0
+      coeffs(19)   = sigk2
+      sigom2       = 0.856
+      coeffs(20)   = sigom2
+      gamma2       = beta2/betainf_str 
+     $             - sigom2 * vkappa**2/sqrt(betainf_str) ! should be 0.44 for k-epsilon
 c        gamma2       = 0.44
-        coeffs(21)   = gamma2
-        coeff22      = 0.0
-        coeffs(22)   = coeff22
-        coeff23      = 0.0
-        coeffs(23)   = coeff23
+      coeffs(21)   = gamma2
+      coeff22      = 0.0
+      coeffs(22)   = coeff22
+      coeff23      = 0.0
+      coeffs(23)   = coeff23
 
 c constants related to limiting source terms or mu_t
-        Hlen         = 1.0
-        coeffs(24)   = Hlen
-        ywlim        = 0.5
-        coeffs(25)   = ywlim
-        edd_frac_free= 0.01
-        coeffs(26)   = edd_frac_free
-        tke_frac_free= 1.e-6
-        coeffs(27)   = tke_frac_free
-        
+      Hlen         = 1.0
+      coeffs(24)   = Hlen
+      ywlim        = 0.5
+      coeffs(25)   = ywlim
+      edd_frac_free= 0.01
+      coeffs(26)   = edd_frac_free
+      tke_frac_free= 1.e-6
+      coeffs(27)   = tke_frac_free
+      
 c yplus boundary related to wall functions
-        yplus        = 100.
-        coeffs(28)   = yplus
+      yplus        = 100.
+      coeffs(28)   = yplus
 
-        return
-        end
+      return
+      end
 c-----------------------------------------------------------------------
       subroutine rans_komg_stndrd_eddy
 c
@@ -2398,6 +2443,7 @@ c
       include 'SIZE'
       include 'TOTAL'
 
+      integer lxyz
       parameter (lxyz=lx1*ly1*lz1)
 
       real           g    (lxyz), div     (lxyz)
@@ -2406,9 +2452,10 @@ c
      $                , Om_mag2(lx1*ly1*lz1,lelv)
      $                , OiOjSk (lx1*ly1*lz1,lelv)
      $                , DivQ   (lx1*ly1*lz1,lelv)
+      real St_mag2,Om_mag2,OiOjSk,DivQ
 
       integer e
-      real k
+      real rho,mu,nu,tau,k
 
 c Turbulent viscosity constants
         Pr_t         = coeffs( 1)
@@ -2497,6 +2544,7 @@ c
       include 'SIZE'
       include 'TOTAL'
 
+      integer lxyz
       parameter (lxyz=lx1*ly1*lz1)
 
       real           g    (lxyz), div     (lxyz)
@@ -2505,9 +2553,10 @@ c
      $                , Om_mag2(lx1*ly1*lz1,lelv)
      $                , OiOjSk (lx1*ly1*lz1,lelv)
      $                , DivQ   (lx1*ly1*lz1,lelv)
+      real St_mag2,Om_mag2,OiOjSk,DivQ
 
       integer e
-      real k
+      real rho,mu,nu,omega,k
 
 c Turbulent viscosity constants
         Pr_t         = coeffs( 1)
@@ -2598,6 +2647,7 @@ c
       include 'SIZE'
       include 'TOTAL'
 
+      integer lxyz
       parameter (lxyz=lx1*ly1*lz1)
 
       real           k_x(lxyz),k_y(lxyz),k_z(lxyz)
@@ -2608,9 +2658,10 @@ c
      $                , Om_mag2(lx1*ly1*lz1,lelv)
      $                , OiOjSk (lx1*ly1*lz1,lelv)
      $                , DivQ   (lx1*ly1*lz1,lelv)
+      real St_mag2,Om_mag2,OiOjSk,DivQ
 
       integer e
-      real k
+      real rho,mu,nu,omega,k
 
 c Turbulent viscosity constants
         Pr_t         = coeffs( 1)
@@ -2744,6 +2795,7 @@ c
       include 'SIZE'
       include 'TOTAL'
 
+      integer lxyz
       parameter (lxyz=lx1*ly1*lz1)
 
       real           g    (lxyz), div     (lxyz)
@@ -2752,10 +2804,12 @@ c
      $                , Om_mag2(lx1*ly1*lz1,lelv)
      $                , OiOjSk (lx1*ly1*lz1,lelv)
      $                , DivQ   (lx1*ly1*lz1,lelv)
+      real St_mag2,Om_mag2,OiOjSk,DivQ
 
       integer e
 
-      real kwall, kappa, kwallo, k
+      real kwall, kappa, kwallo
+      real rho,mu,nu,omega,k
 
         vkappa = 0.41
 
@@ -2855,6 +2909,7 @@ c
       include 'SIZE'
       include 'TOTAL'
 
+      integer lxyz
       parameter (lxyz=lx1*ly1*lz1)
 
       real           g    (lxyz), div     (lxyz)
@@ -2863,9 +2918,10 @@ c
      $                , Om_mag2(lx1*ly1*lz1,lelv)
      $                , OiOjSk (lx1*ly1*lz1,lelv)
      $                , DivQ   (lx1*ly1*lz1,lelv)
+      real St_mag2,Om_mag2,OiOjSk,DivQ
 
       integer e
-      real k
+      real rho,mu,nu,tau,k
 
 c Turbulent viscosity constants
         Pr_t         = coeffs( 1)
@@ -2953,6 +3009,7 @@ c
       include 'SIZE'
       include 'TOTAL'
 
+      integer lxyz
       parameter (lxyz=lx1*ly1*lz1)
 
       real           g    (lxyz), div     (lxyz)
@@ -2961,9 +3018,10 @@ c
      $                , Om_mag2(lx1*ly1*lz1,lelv)
      $                , OiOjSk (lx1*ly1*lz1,lelv)
      $                , DivQ   (lx1*ly1*lz1,lelv)
+      real St_mag2,Om_mag2,OiOjSk,DivQ
 
       integer e
-      real k
+      real rho,mu,nu,tau,k
 
 c Turbulent viscosity constants
         Pr_t         = coeffs( 1)
@@ -3055,6 +3113,7 @@ c
       include 'SIZE'
       include 'TOTAL'
 
+      integer lxyz
       parameter (lxyz=lx1*ly1*lz1)
 
       real           k_x(lxyz),k_y(lxyz),k_z(lxyz)
@@ -3065,9 +3124,10 @@ c
      $                , Om_mag2(lx1*ly1*lz1,lelv)
      $                , OiOjSk (lx1*ly1*lz1,lelv)
      $                , DivQ   (lx1*ly1*lz1,lelv)
+      real St_mag2,Om_mag2,OiOjSk,DivQ
 
       integer e
-      real k
+      real rho,mu,nu,tau,k
 
 c Turbulent viscosity constants
         Pr_t         = coeffs( 1)
