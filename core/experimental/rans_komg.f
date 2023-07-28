@@ -75,8 +75,12 @@ c-----------------------------------------------------------------------
       data ifevalsrc /.true./
       common /komgifsrc/ ifevalsrc
 
-      if(ix*iy*iz*iel.eq.1 .and. ifevalsrc) then
-         if(nid.eq.0 .and. loglevel.gt.2) write(6,*) 'updating rans_src'
+      integer iflda
+      iflda=min(ifld_k,ifld_omega)
+
+      if(ix*iy*iz*iel.eq.1 .and. ifield.eq.iflda.and.ifevalsrc) then
+         if(nid.eq.0 .and. loglevel.gt.2) 
+     &                        write(6,*) 'updating rans_src kSrc',ifield
          if(ifrans_komg_stndrd)      call rans_komg_stndrd_compute
          if(ifrans_komg_lowRe)       call rans_komg_lowRe_compute
          if(ifrans_komgSST_stndrd)   call rans_komgSST_stndrd_compute
@@ -87,7 +91,7 @@ c-----------------------------------------------------------------------
          ifevalsrc = .false.
       endif
 
-      if(ifld_k.gt.ifld_omega) ifevalsrc = .true.
+      if(ifield.gt.iflda) ifevalsrc = .true.
       rans_kSrc = kSrc(ix,iy,iz,iel)
 
       return
@@ -102,8 +106,12 @@ c-----------------------------------------------------------------------
       data ifevalsrc /.true./
       common /komgifsrc/ ifevalsrc
 
-      if(ix*iy*iz*iel.eq.1 .and. ifevalsrc) then
-         if(nid.eq.0 .and. loglevel.gt.2) write(6,*) 'updating rans_src'
+      integer iflda
+      iflda=min(ifld_k,ifld_omega)
+
+      if(ix*iy*iz*iel.eq.1 .and. ifield.eq.iflda.and.ifevalsrc) then
+         if(nid.eq.0 .and. loglevel.gt.2) 
+     &                      write(6,*) 'updating rans_src omgSrc',ifield
          if(ifrans_komg_stndrd)      call rans_komg_stndrd_compute
          if(ifrans_komg_lowRe)       call rans_komg_lowRe_compute
          if(ifrans_komgSST_stndrd)   call rans_komgSST_stndrd_compute
@@ -114,7 +122,7 @@ c-----------------------------------------------------------------------
          ifevalsrc = .false.
       endif
 
-      if(ifld_omega.gt.ifld_k) ifevalsrc = .true.
+      if(ifield.gt.iflda) ifevalsrc = .true.
       rans_omgSrc = omgSrc(ix,iy,iz,iel)
 
       return
@@ -129,8 +137,12 @@ c-----------------------------------------------------------------------
       data ifevalsrc /.true./
       common /komgifsrc/ ifevalsrc
 
-      if(ix*iy*iz*iel.eq.1 .and. ifevalsrc) then
-         if(nid.eq.0 .and. loglevel.gt.2) write(6,*) 'updating rans_src'
+      integer iflda
+      iflda=min(ifld_k,ifld_omega)
+
+      if(ix*iy*iz*iel.eq.1 .and. ifield.eq.iflda.and.ifevalsrc) then
+         if(nid.eq.0 .and. loglevel.gt.2) 
+     &                       write(6,*) 'updating rans_src kDiag',ifield
          if(ifrans_komg_stndrd)      call rans_komg_stndrd_compute
          if(ifrans_komg_lowRe)       call rans_komg_lowRe_compute
          if(ifrans_komgSST_stndrd)   call rans_komgSST_stndrd_compute
@@ -141,7 +153,7 @@ c-----------------------------------------------------------------------
          ifevalsrc = .false.
       endif
 
-      if(ifld_k.gt.ifld_omega) ifevalsrc = .true.
+      if(ifield.gt.iflda) ifevalsrc = .true.
       rans_kDiag = kDiag(ix,iy,iz,iel)
 
       return
@@ -156,8 +168,12 @@ c-----------------------------------------------------------------------
       data ifevalsrc /.true./
       common /komgifsrc/ ifevalsrc
 
-      if(ix*iy*iz*iel.eq.1 .and. ifevalsrc) then
-         if(nid.eq.0 .and. loglevel.gt.2) write(6,*) 'updating rans_src'
+      integer iflda
+      iflda=min(ifld_k,ifld_omega)
+
+      if(ix*iy*iz*iel.eq.1 .and. ifield.eq.iflda.and.ifevalsrc) then
+         if(nid.eq.0 .and. loglevel.gt.2) 
+     &                     write(6,*) 'updating rans_src omgDiag',ifield
          if(ifrans_komg_stndrd)      call rans_komg_stndrd_compute
          if(ifrans_komg_lowRe)       call rans_komg_lowRe_compute
          if(ifrans_komgSST_stndrd)   call rans_komgSST_stndrd_compute
@@ -168,7 +184,7 @@ c-----------------------------------------------------------------------
          ifevalsrc = .false.
       endif
 
-      if(ifld_omega.gt.ifld_k) ifevalsrc = .true.
+      if(ifield.gt.iflda) ifevalsrc = .true.
       rans_omgDiag = omgDiag(ix,iy,iz,iel)
 
       return
@@ -197,7 +213,10 @@ c
       logical ifcoeffs,ifransD
 
       character*3 bcw
+      character   bc1(3)
       character*36 mname(7)
+
+      equivalence (bcw,bc1)
 
       data mname
      &/'regularized standard k-omega        '
@@ -205,7 +224,7 @@ c
      &,'regularized standard k-omega SST    '
      &,'non-regularized standard k-omega    '
      &,'standard k-tau                      '
-     &,'low-Re   k-tau                      '
+     &,'low-Re k-tau                        '
      &,'standard k-tau SST                  '/
 
       n=lx1*ly1*lz1*nelv
@@ -238,8 +257,6 @@ c split diagonal of the source term into implicit, by Sigfried
 
       if(nid.eq.0) write(*,'(a,a)')
      &                      '  model: ',mname(model_id+1)
-      if(nio.eq.0) write(*,*)
-     &                      '  ifrans_diag: ',ifrans_diag
       ifld_k     = ifld_k_in
       ifld_omega = ifld_omega_in
       ifld_mx=max(ifld_k,ifld_omega)
@@ -249,20 +266,17 @@ c split diagonal of the source term into implicit, by Sigfried
 
 ! specify k-omega model coefficients
 
-
       if(ifcoeffs) then
-        if(ncoeffs_in.lt.ncoeffs) call exitti(
-     $   'dim of user provided komg coeffs array should be >=$',ncoeffs)
         do i=1,ncoeffs
           coeffs(i) =coeffs_in(i)
         enddo
       else
         if(ifrans_komg_stndrd .or. ifrans_komg_lowRe .or.
      $  ifrans_komg_stndrd_noreg .or. ifrans_ktau_stndrd .or.
-c     $  ifrans_ktau_lowRe) call rans_komg_set_defaultcoeffs
-     $  ifrans_ktau_lowRe) call rans_komg2006_set_defaultcoeffs
+     $  ifrans_ktau_lowRe) 
+     $                              call rans_komg2006_set_defaultcoeffs
         if(ifrans_komgSST_stndrd .or. ifrans_ktauSST_stndrd)
-     $                               call rans_komgSST_set_defaultcoeffs
+     $                              call  rans_komgSST_set_defaultcoeffs
       endif
 
 c setup wall distance
@@ -284,10 +298,10 @@ c set cbc array for k and omega/tau (need to revise for wall-functions)
         bcw=cbc(ifc,ie,1)
         cbc(ifc,ie,ifld_k)=bcw
         cbc(ifc,ie,ifld_omega)=bcw
-        if(bcw.eq.'W  '.or.bcw.eq.'v  ') then
+        if(bc1(1).eq.'W'.or.bc1(1).eq.'v') then !catch 'vl ' with bc1
           cbc(ifc,ie,ifld_k)='t  '
           cbc(ifc,ie,ifld_omega)='t  '
-        elseif(bcw.eq.'SYM'.or.bcw.eq.'O  '.or.bcw.eq.'o  ') then
+        elseif(bcw.eq.'SYM'.or.bc1(1).eq.'O'.or.bc1(1).eq.'o') then !catch 'on '
           cbc(ifc,ie,ifld_k)='I  '
           cbc(ifc,ie,ifld_omega)='I  '
         endif
@@ -295,9 +309,28 @@ c set cbc array for k and omega/tau (need to revise for wall-functions)
 
 c solve for omega_wall & setup molecular viscosity
       call rans_komg_omegabase
-      call cfill(mul,cpfld(1,1),n)
+      call get_mol_visc
 
       if(nid.eq.0) write(6,*) 'done :: init RANS'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine get_mol_visc
+      include 'SIZE'
+      include 'TOTAL'
+      include 'RANS_KOMG'
+
+      integer ix,iy,iz,e,eg,n
+
+      n=lx1*ly1*lz1*nelv
+
+      call cfill(mul,cpfld(1,1),n)
+
+c will need these later for wall functions    
+      call opgrad  (mul_dx,mul_dy,mul_dz,mul)
+      call opdssum (mul_dx,mul_dy,mul_dz)
+      call opcolv  (mul_dx,mul_dy,mul_dz,binvm1)
 
       return
       end
@@ -1347,14 +1380,12 @@ c yplus boundary related to wall functions
         yplus        = coeffs(28)
 c================================
 
-      ntot = nx1*ny1*nz1*nelv
+      ntot = lx1*ly1*lz1*nelv
 
-      mu_min    = edd_frac_free*param(2)
-
-      call limit_ktau ! check for negative values
       call comp_StOm (St_mag2, Om_mag2, OiOjSk, DivQ)
       call sqrt_tau(tausq,t(1,1,1,1,ifld_omega-1),ntot)
       call rzero(div,lxyz)
+c     call limit_ktau ! check for negative values
 
       do e=1,nelv
 
@@ -1370,6 +1401,7 @@ c       call copy   (g,   Om_mag2(1,e),       lxyz)
 
           rho = vtrans(i,1,1,e,1)
           mu  = mul(i,1,1,e)
+          mu_min = edd_frac_free * mu
           tau = t(i,1,1,e,ifld_omega-1) ! Current k & tau    values
           k   = t(i,1,1,e,ifld_k-1)     ! from previous timestep
 
@@ -1411,13 +1443,12 @@ c calculate mu_t
 
 c Limit source terms in far field
           yw   = ywd  (i,1,1,e)
+          
           Rfact= 1.
           if( mu_t.lt.mu_min .and .yw.gt.ywlim) Rfact= mu_t/mu_min
 
 c Compute Y_k = dissipation of k
-c         Y_k = 0.
-c         if(tau.gt.tiny) Y_k = rho * betai_str * f_beta_str / tau
-          Y_k = rho * betai_str * f_beta_str / (tau + tiny)
+          Y_k = rho * betai_str * f_beta_str * Rfact / (tau + tiny)
 
 c Compute G_k = production of k 
           extra_prod = twothird*div(i)
@@ -1427,17 +1458,15 @@ c Compute G_k = production of k
 
 c Compute Source term for k
           if (ifrans_diag) then
-            kSrc  (i,1,1,e) = G_k
+            kSrc  (i,1,1,e) = min(G_k, 10.0*Y_k*k)
             kDiag (i,1,1,e) = Y_k + G_p
           else
-            kSrc  (i,1,1,e) = G_k - ( Y_k + G_p ) * k
+            kSrc  (i,1,1,e) = min(G_k, 10.0*Y_k*k) - ( Y_k + G_p ) * k
             kDiag (i,1,1,e) = 0.0
           endif
 
 c Compute production of tau
-          alpha = (alp_inf/alp_str)
-          gamm  = alpha*alp_str
-
+          gamm  = alp_str*(alp_inf/alp_str)
           G_p = rho*gamm*Rfact*(tau*g(i)-(1.+div(i)*tau)*extra_prod)
 
 c Compute dissipation of tau
@@ -1449,12 +1478,13 @@ c         if(if3d) f_b = (1.0 + fb_c1*x_w)/(1.0 + fb_c2*x_w)
 
           Y_w = rho*beta*f_b * Rfact
 
-          S_tau = 8.0*mu    *xtq * Rfact
-          S_taup= 8.0*mu_tp *xtq * Rfact/sigma_omega
-
 c Compute extra source term of tau
 c         S_w =-rho * sigd * xk * tau * Rfact
           S_wp= rho * sigd * xk *       Rfact
+
+          S_tau = 8.0*mu    *xtq * Rfact
+          S_tau = min(S_tau, 8.*beta/3.)
+          S_taup= 8.0*mu_tp *xtq * Rfact/sigma_omega
 
 c Compute Source term for tau
           if(ifrans_diag) then
@@ -1553,14 +1583,12 @@ c yplus boundary related to wall functions
         yplus        = coeffs(28)
 c================================
 
-      ntot = nx1*ny1*nz1*nelv
+      ntot = lx1*ly1*lz1*nelv
 
-      mu_min    = edd_frac_free*param(2)
-
-      call limit_ktau ! check for negative values
       call comp_StOm (St_mag2, Om_mag2, OiOjSk, DivQ)
       call sqrt_tau(tausq,t(1,1,1,1,ifld_omega-1),ntot)
       call rzero(div,lxyz)
+      call limit_ktau ! check for negative values
 
       do e=1,nelv
 
@@ -1576,6 +1604,7 @@ c       call copy   (g,   Om_mag2(1,e),       lxyz)
 
           rho = vtrans(i,1,1,e,1)
           mu  = mul(i,1,1,e)
+          mu_min = edd_frac_free * mu
           tau = t(i,1,1,e,ifld_omega-1) ! Current k & tau    values
           k   = t(i,1,1,e,ifld_k-1)     ! from previous timestep
 
@@ -1626,8 +1655,7 @@ c Limit source terms in far field
           if( mu_t.lt.mu_min .and .yw.gt.ywlim) Rfact= mu_t/mu_min
 
 c Compute Y_k = dissipation of k
-          Y_k = 0.
-          if(tau.gt.0) Y_k = rho * betai_str * f_beta_str / tau
+          Y_k = rho * betai_str * f_beta_str * Rfact / (tau + tiny)
 
 c Compute G_k = production of  k and limit it to 10*Y_k (the dissipation of k)
           extra_prod = twothird*div(i)
@@ -1637,14 +1665,14 @@ c Compute G_k = production of  k and limit it to 10*Y_k (the dissipation of k)
 
 c Compute Source term for k
           if (ifrans_diag) then
-            kSrc  (i,1,1,e) = G_k
+            kSrc  (i,1,1,e) = min(G_k, 10.0*Y_k*k)
             kDiag (i,1,1,e) = Y_k + G_p
           else
-            kSrc  (i,1,1,e) = G_k - ( Y_k + G_p ) * k
+            kSrc  (i,1,1,e) = min(G_k, 10.0*Y_k*k) - ( Y_k + G_p ) * k
             kDiag (i,1,1,e) = 0.0
           endif
 
-c Compute production of omega
+c Compute production of tau
           alpha = (alp_inf/alp_str) *
      $          ( (alpha_0 + (re_t/r_w))/(1.0 + (re_t/r_w)) )
 
@@ -1667,6 +1695,7 @@ c         S_w =-rho * sigd * xk * tau * Rfact
 
 c Compute Source term for tau
           S_tau = 8.0*mu    *xtq * Rfact
+          S_tau = min(S_tau, 8.*beta/3.)
           S_taup= 8.0*mu_tp *xtq * Rfact/sigma_omega
 
           if(ifrans_diag) then
@@ -1766,20 +1795,18 @@ c yplus boundary related to wall functions
         yplus        = coeffs(28)
 c================================
 
-      ntot = nx1*ny1*nz1*nelv
+      ntot = lx1*ly1*lz1*nelv
 
-      mu_min    = edd_frac_free*param(2)
-
-      call limit_ktau ! check for negative values
       call comp_StOm (St_mag2, Om_mag2, OiOjSk, DivQ)
       call sqrt_tau(tausq,t(1,1,1,1,ifld_omega-1),ntot)
+      call rzero(div,lxyz)
+      call limit_ktau ! check for negative values
 
       do e=1,nelv
 
         call copy   (g,   St_mag2(1,e),       lxyz)
 c       call copy   (g,   Om_mag2(1,e),       lxyz)
-        call copy   (div, DivQ   (1,e),       lxyz)
-        if(.not.iflomach) call rzero  (div,   lxyz)
+        if(iflomach) call copy(div,DivQ(1,e),lxyz)
 
         call gradm11(k_x,  k_y,  k_z,  t(1,1,1,1,ifld_k    -1),e)
         call gradm11(tau_x,tau_y,tau_z,t(1,1,1,1,ifld_omega-1),e)
@@ -1789,6 +1816,8 @@ c       call copy   (g,   Om_mag2(1,e),       lxyz)
 
           rho = vtrans(i,1,1,e,1)
           mu  = mul(i,1,1,e)
+          mu_min = edd_frac_free * mu
+
           nu  = mu/rho
           tau = t(i,1,1,e,ifld_omega-1) ! Current k & tau    values
           k   = t(i,1,1,e,ifld_k-1)     ! from previous timestep
@@ -1854,8 +1883,7 @@ c calculate mu_t
           if( mu_t.lt.mu_min .and .yw.gt.ywlim) Rfact= mu_t/mu_min  ! limit source terms in far field
 
 c Compute Y_k = dissipation of k
-          Y_k = 0.
-          if(tau.gt.0) Y_k = rho * beta_str / tau
+          Y_k = rho * beta_str * Rfact / (tau + tiny)
 
 c Compute G_k = production of  k and limit it to 10*Y_k (the dissipation of k)
           extra_prod = twothird*div(i)
@@ -1865,7 +1893,7 @@ c Compute G_k = production of  k and limit it to 10*Y_k (the dissipation of k)
 
 c Compute Source term for k
           if (ifrans_diag) then
-            kSrc  (i,1,1,e) = G_k
+            kSrc  (i,1,1,e) = min(G_k, 10.0*Y_k*k)
             kDiag (i,1,1,e) = Y_k + G_p
           else
             kSrc  (i,1,1,e) = G_k - ( Y_k + G_p ) * k
@@ -1885,11 +1913,12 @@ c Compute dissipation of omega
           Y_w = rho * beta * Rfact
 
 c Compute additional SST term for tau
-c         S_w =-2.0 * rho * sigom2 * (1.0 - Fun1) * xk * tau * Rfact
+c         S_w = 2.0 * rho * sigom2 * (1.0 - Fun1) * xk * tau * Rfact
           S_wp= 2.0 * rho * sigom2 * (1.0 - Fun1) * xk *       Rfact
 
 c Compute Source term for omega
           S_tau = 8.0*mu   *xtq * Rfact
+          S_tau = min(S_tau, 8.*beta/3.)
           S_taup= 8.0*rho*k*xtq * Rfact*sigom
 
           if(ifrans_diag) then
@@ -2820,10 +2849,6 @@ c================================
       call limit_ktau !check for negative values
 
       do e=1,nelv
-
-        call copy   (g,   St_mag2(1,e),       lxyz)
-c       call copy   (g,   Om_mag2(1,e),       lxyz)
-
         do i=1,lxyz
 
           rho     = vtrans(i,1,1,e,1)
@@ -2838,7 +2863,6 @@ c calculate mu_t
           mutsk(i,1,1,e)   = mu_t / sigma_k
           mutso(i,1,1,e)   = mu_t / sigma_omega
         enddo
-
       enddo
 
       return
@@ -3540,15 +3564,17 @@ c
       end
 c-----------------------------------------------------------------------
       subroutine sqrt_tau(tausq,tinput,n)
-      implicit real(a-h,o-z)
-      include 'SIZE'
-      include 'PARALLEL'
-c
-      real tausq(n), tinput(n)
+      implicit none
 
+      real tau, tausq(n), tinput(n), frac
+      integer i,n
+
+c     don't limit tau here, just use abs before evaluating sqrt 
+      frac = 1.
       do i=1,n
-         tau     = tinput(i)               ! Current tau    values
-         tausq(i) = sqrt(tau)
+        tau = tinput(i)
+        if(tau.lt.0.0) tau = frac*abs(tau)
+        tausq(i) = sqrt(tau)
       enddo
 
       return
@@ -3691,6 +3717,8 @@ c
       frac       = 1.
 
 c limits for k, omega
+
+      if(loglevel.gt.2.and.nio.eq.0) write(*,*) "limiting ktau"
 
       do e=1,nelv
       do i=1,nxyz
