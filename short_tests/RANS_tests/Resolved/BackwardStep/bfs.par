@@ -1,0 +1,40 @@
+[GENERAL]
+startfrom = komega.fld + time=0
+stopat = numSteps
+numsteps = 10000
+dt = 1.0e-4
+writeinterval = 10000
+userparam01 = 0
+timestepper = BDF2
+
+[PROBLEMTYPE]
+equation = incompNS
+stressformulation = yes
+variableproperties = yes
+
+[MESH]
+writetofieldfile = yes
+
+[VELOCITY]
+density = 1.0
+viscosity = -149700.0
+residualtol = 1e-8
+residualproj = yes
+
+[PRESSURE]
+residualtol = 1e-6
+residualproj = yes
+
+[TEMPERATURE]
+solver = none
+
+[SCALAR01]
+density = 1.0
+diffusivity = -149700.0
+residualtol = 1e-8
+
+[SCALAR02]
+density = 1.0
+diffusivity = -149700.0
+residualtol = 1e-8
+

@@ -1,0 +1,43 @@
+#Nek5000 parameter file
+[GENERAL]
+startFrom = dome.fld
+stopAt = numSteps
+numSteps = 100000
+dt = 1.0e-3
+writeInterval = 10000
+
+[MESH]
+writeToFieldFile = yes
+
+[PROBLEMTYPE]
+equation = incompNS
+axiSymmetry = yes
+stressFormulation = yes
+variableProperties = yes
+
+[VELOCITY]
+#boundaryTypeMap = inlet, outlet, wall, axis
+density = 1.0
+viscosity = -10622.0
+residualTol = 1e-6
+#residualPROJ = yes
+
+[PRESSURE]
+residualTol = 1e-4
+residualPROJ = yes
+
+[TEMPERATURE]
+solver = none
+writeToFieldFile = yes
+
+[SCALAR01] 
+density = 1.0
+diffusivity =-10622.0
+residualTol = 1e-6
+
+[SCALAR02] 
+density = 1.0
+diffusivity =-10622.0
+residualTol = 1e-6
+
+

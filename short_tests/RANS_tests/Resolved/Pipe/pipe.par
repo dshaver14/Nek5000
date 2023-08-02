@@ -1,0 +1,39 @@
+[GENERAL]
+dt = 10.0e-3
+numsteps = 10000
+writeinterval = 1000
+userparam01 = 0
+startfrom = komega.fld + time=0
+
+[PROBLEMTYPE]
+variableproperties = yes
+stressformulation = yes
+
+[MESH]
+writetofieldfile = no
+
+[VELOCITY]
+viscosity = -37700.0
+density = 1.0
+residualtol = 1.0e-6
+
+[PRESSURE]
+residualproj = yes
+residualtol = 1.0e-5
+
+[TEMPERATURE]
+solver = none
+rhocp = 1.0
+conductivity = -1.0
+residualtol = 1.0e-4
+
+[SCALAR01]
+density = 1.0
+diffusivity = -37700.0
+residualtol = 1.0e-6
+
+[SCALAR02]
+density = 1.0
+diffusivity = -37700.0
+residualtol = 1.0e-6
+
