@@ -891,6 +891,7 @@ C
       INCLUDE 'SCRCT'
       INCLUDE 'TOPOL'
       LOGICAL IFYES,IFCSTT
+      integer nbad
 C
       IFCSTT=.TRUE.
       IF (.NOT.IF3D) THEN
@@ -908,7 +909,7 @@ C
 C
             ieg=lglel(ie)
             WRITE(6,800) IEG,C1,C2,C3,C4
-            call exitt
+            nbad = nbad+1
   800       FORMAT(/,2X,'WARNINGa: Detected non-right-handed element.',
      $      /,2X,'Number',I8,'  C1-4:',4E12.4)
             IFCSTT=.FALSE.
@@ -940,7 +941,7 @@ C
 C
             ieg=lglel(ie)
             WRITE(6,1800) IEG,V1,V2,V3,V4,V5,V6,V7,V8
-            call exitt
+            nbad = nbad+1
  1800       FORMAT(/,2X,'WARNINGb: Detected non-right-handed element.',
      $      /,2X,'Number',I8,'  V1-8:',4E12.4
      $      /,2X,'      ',4X,'       ',4E12.4)
@@ -948,6 +949,16 @@ C
          ENDIF
  2000 CONTINUE
       ENDIF
+
+      nbad=iglsum(nbad,1)
+      if(nbad.gt.0) then 
+        ifxyo = .true.
+        ifvo = .false.
+        ifpo = .false.
+        ifto = .false.
+        call outpost(vx,vy,vz,pr,t,'xyz')
+        call exitti ('non-right-handed elements found in verrhe',nbad)
+      endif
 C
  9000 CONTINUE
 C
