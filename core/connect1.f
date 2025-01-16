@@ -894,6 +894,7 @@ C
       integer nbad
 C
       IFCSTT=.TRUE.
+      nbad=0
       IF (.NOT.IF3D) THEN
       DO 1000 IE=1,NELT
 C
@@ -957,7 +958,7 @@ C
         ifpo = .false.
         ifto = .false.
         call outpost(vx,vy,vz,pr,t,'xyz')
-        call exitti ('non-right-handed elements found in verrhe',nbad)
+        call exitti ('non-right-handed elements found in verrhe $',nbad)
       endif
 C
  9000 CONTINUE
