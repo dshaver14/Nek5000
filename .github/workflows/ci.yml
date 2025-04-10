@@ -47,6 +47,8 @@ jobs:
             "impsrc_scalar::test_PnPn_Parallel",
             "bcid_test_3D::test_PnPn_Parallel",
             "bcid_test_2D::test_PnPn_Serial" 
+	    "RANSChannel::test_Std_ktau",
+	    "RANSChannel::test_Reg_komega"	 
         ]
         include:
           - test_case: "Tools"
