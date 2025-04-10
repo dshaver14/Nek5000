@@ -1,3 +1,4 @@
+c-----------------------------------------------------------------------
       real function rans_mut(ix,iy,iz,iel)
       include 'SIZE'
       include 'TSTEP'
@@ -2192,6 +2193,10 @@ c
       logical ifcoeffs,ifransD
 
       character*3 bcw
+      character bc1
+
+      equivalence (bcw,bc1)
+
       character*36 mname(7)
 
       data mname
@@ -2205,11 +2210,11 @@ c
 
       n=nx1*ny1*nz1*nelv
 
-      if(nid.eq.0) write(6,*) 'init RANS model'
+      if(nid.eq.0) write(6,*) 'initialize RANS model'
 
       if(iflomach) then
         if(nid.eq.0) write(6,*)
-     &          "ERROR: K-OMEGA NOT SUPPORTED WITH LOW MACH FORMULATION"
+     &          "ERROR: RANS NOT SUPPORTED WITH LOW MACH FORMULATION"
         call exitt
       endif
 
@@ -2274,11 +2279,28 @@ c solve for omega_pert
         call copy(ywd_in,ywd,n)
       endif
 
+c set cbc array for k and omega/tau (need to revise for wall-functions)
+      do 10 ie = 1,nelv
+      do 10 ifc = 1,2*ndim
+        bcw=cbc(ifc,ie,1)
+        cbc(ifc,ie,ifld_k)=bcw
+        cbc(ifc,ie,ifld_omega)=bcw
+        if(bc1.eq.'W'.or.bc1.eq.'v') then
+          cbc(ifc,ie,ifld_k)='t  '
+          cbc(ifc,ie,ifld_omega)='t  '
+        elseif(bcw.eq.'SYM'.or.bc1.eq.'O'.or.bc1.eq.'o'.or.bc1.eq.'s') 
+     &                                                             then
+          cbc(ifc,ie,ifld_k)='I  '
+          cbc(ifc,ie,ifld_omega)='I  '
+        endif
+  10  continue
+
       call get_mol_visc
-      call rans_komg_omegabase
+      if(model_id.le.2) call rans_komg_omegabase
 
 c     Initialization for wall functions
-      call rans_init_wf(wall_id)
+c     call rans_init_wf(wall_id)
+
       if(nid.eq.0) write(6,*) 'done :: init RANS'
 
       return
