@@ -893,6 +893,7 @@ C
       LOGICAL IFYES,IFCSTT
 C
       IFCSTT=.TRUE.
+      nnr = 0
       IF (.NOT.IF3D) THEN
       DO 1000 IE=1,NELT
 C
@@ -907,8 +908,8 @@ C
      $       C3.LE.0.0.OR.C4.LE.0.0 ) THEN
 C
             ieg=lglel(ie)
-            WRITE(6,800) IEG,C1,C2,C3,C4
-            call exitt
+            nnr = nnr + 1
+            if(loglevel.gt.2) WRITE(6,800) IEG,C1,C2,C3,C4
   800       FORMAT(/,2X,'WARNINGa: Detected non-right-handed element.',
      $      /,2X,'Number',I8,'  C1-4:',4E12.4)
             IFCSTT=.FALSE.
@@ -939,11 +940,11 @@ C
      $       V7.LE.0.0.OR.V8.LE.0.0    ) THEN
 C
             ieg=lglel(ie)
-            WRITE(6,1800) IEG,V1,V2,V3,V4,V5,V6,V7,V8
-            call exitt
+            nnr = nnr + 1
+            if(loglevel.gt.2) WRITE(6,1800) IEG,V1,V2,V3,V4,V5,V6,V7,V8
  1800       FORMAT(/,2X,'WARNINGb: Detected non-right-handed element.',
      $      /,2X,'Number',I8,'  V1-8:',4E12.4
-     $      /,2X,'      ',4X,'       ',4E12.4)
+     $      /,2X,'      ',8X,'       ',4E12.4)
             IFCSTT=.FALSE.
          ENDIF
  2000 CONTINUE
@@ -960,7 +961,8 @@ C
       CALL GLLOG(IFCSTT,.FALSE.)
 C
       IF (.NOT.IFCSTT) THEN
-         IF (NID.EQ.0) WRITE(6,2003) NELGT
+         nnr = iglsum(nnr,1)
+         IF (NID.EQ.0) WRITE(6,2003) nnr
          call exitt
       ELSE
          IF (NIO.EQ.0) WRITE(6,2002) NELGT
@@ -969,7 +971,7 @@ C
  2001 FORMAT(//,'  Elemental geometry not right-handed, ABORTING'
      $      ,' in routine VERRHE.')
  2002 FORMAT('   Right-handed check complete for',I12,' elements. OK.')
- 2003 FORMAT('   Right-handed check failed for',I12,' elements.'
+ 2003 FORMAT('   Right-handed check failed for',nnr,' elements.'
      $      ,'   Exiting in routine VERRHE.')
       RETURN
       END
