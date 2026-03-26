@@ -2189,7 +2189,7 @@ c
 
       integer n,wall_id,ifld_mx
       real coeffs_in(1),ywd_in(1)
-      logical ifcoeffs,ifransD
+      logical ifcoeffs,ifransD,ifwallf
 
       character*3 bcw
       character*36 mname(7)
@@ -2204,12 +2204,13 @@ c
      &,'standard k-tau SST                  '/
 
       n=nx1*ny1*nz1*nelv
+      ifwallf = .false.
 
       if(nid.eq.0) write(6,*) 'init RANS model'
 
       if(iflomach) then
         if(nid.eq.0) write(6,*)
-     &          "ERROR: K-OMEGA NOT SUPPORTED WITH LOW MACH FORMULATION"
+     &          "ERROR: RANS NOT SUPPORTED WITH LOW MACH FORMULATION"
         call exitt
       endif
 
@@ -2277,10 +2278,41 @@ c solve for omega_pert
       call get_mol_visc
       call rans_komg_omegabase
 
+      if(ifwallf) then
 c     Initialization for wall functions
-      call rans_init_wf(wall_id)
+c       call rans_init_wf(wall_id)
+      else
+        call set_bcs_RANS(ifld_k,ifld_omega)
+      endif
+
       if(nid.eq.0) write(6,*) 'done :: init RANS'
 
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_bcs_RANS(ifld_1,ifld_2)
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      character*3 cb3
+      character cb1(3)
+      equivalence (cb3,cb1)
+
+      do 10 ie = 1,nelv
+      do 10 ifc = 1,2*ldim
+        cb3 = cbc(ifc,ie,1)
+        cbc(ifc,ie,ifld_1) = cb3
+        cbc(ifc,ie,ifld_2) = cb3
+        if(cb3.eq.'W  '.or.cb1(1).eq.'v') then
+          cbc(ifc,ie,ifld_1) = 't  '
+          cbc(ifc,ie,ifld_2) = 't  '
+        elseif(cb3.eq.'SYM'.or.cb1(1).eq.'o'.or.cb1(1).eq.'O') then
+          cbc(ifc,ie,ifld_1) = 'I  '
+          cbc(ifc,ie,ifld_2) = 'I  '
+        endif
+ 10   continue
+    
       return
       end
 c-----------------------------------------------------------------------
@@ -4190,9 +4222,9 @@ c limits for k, tau
       ntau_neg =iglsum(ntau_neg,1)
       xtau_neg = glmin(xtau_neg,1)
 
-      if(nid.eq.0) then
-        if(ntau_neg.gt.0) write(*,*) 'Neg Tau   ', ntau_neg, xtau_neg
-      endif
+c     if(nid.eq.0) then
+c       if(ntau_neg.gt.0) write(*,*) 'Neg Tau   ', ntau_neg, xtau_neg
+c     endif
 
       return
       end
